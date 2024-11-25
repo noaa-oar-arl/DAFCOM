@@ -11,7 +11,15 @@ description
 * Goal 2: build 2nd version workflow
   - [ ] step 1 : process all inputs for training with nearest 30 days, and predict only 1 day. repeat for predicting 2023-07-01 to 2023-08-31.
   - [ ] step 2 : analyze ML model preformance, and compared to Goal 1.
-  - [ ] step 3 : now we use 30 days to train, update to determine the optimal time-scale/lenth of training.
+  - [ ] step 3 : now we use 30 days to train, update to determine the optimal time-scale/length of training.
+### How to Run
+
+currently, all code are located and stored in HOPPER HPC.
+Located in: /groups/ESS/btang6/Projects/NOAA/Forecast_UFS/method1_entire_month_train/code/
+intermediate data are located in: /groups/ESS/btang6/Projects/NOAA/Forecast_UFS/method1_entire_month_train/data/
+all code are python, we have saved slurm file for runnig each python steps.
+to run slurm and python, an enviroment 'DAFCOM' has been built on HOPPER HPC, and all requird libary has been installed in 'DAFCOM' enviroment. slurm will call 'DAFCOM' to run
+
 
 ### Time line of Funding
 
