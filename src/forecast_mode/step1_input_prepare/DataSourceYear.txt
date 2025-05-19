@@ -1,0 +1,48 @@
+
+'''
+Author: Beiming Tang
+Date: 04/30/2025
+'''
+format: index, name, source, year
+0, Meteorology, UFS-AQM, 2025
+1, AOD, UFS-AQM, 2025
+2, Land use cover, MODIS, 2023
+3, Elevation, SRTM, 20yearsNonChange
+4, Population, LandScan, 2023
+5, Chem(pm2.5), UFS-AQM, 2025
+6, Emis_anthro, NEMO, 2019
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
