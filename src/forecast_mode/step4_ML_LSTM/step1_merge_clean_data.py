@@ -1,6 +1,6 @@
 '''
 author: Beiming Tang
-date: 05/07/2025
+date: 05/20/2025
 '''
 import numpy as np
 import xlsxwriter
@@ -37,6 +37,7 @@ df_total = pd.concat(df_list,ignore_index=True)
 '''
 2) drop nan values and duplicate values
 '''
+df_total =  df_total.dropna()
 df_drop_nan  = df_total[df_total['v1_blh'] != 'no_value']
 df_drop_duplicate = df_drop_nan.drop_duplicates(subset=['site_index','time_utc'],keep='first')
 
@@ -48,7 +49,7 @@ df_sort = df_drop_duplicate.sort_values(by=['site_index','time_utc']).reset_inde
 '''
 4) add a column BIAS= obs-pm25 - ufs-pm25
 '''
-df_sort['bias_pm25']= df_sort['airnow_obs_pm25']- df_sort['v13_ufs_pm25']
+df_sort['log_pm25'] = np.log(df_sort['airnow_obs_pm25'])
 
 '''
 5) add day_of_year and hour (utc)
@@ -66,7 +67,7 @@ df_sort['day_of_year']=day_of_year
 '''
 #df_sort.to_excel('PM25_2025_JanToApr_HourlyData.xlsx',sheet_name='PM25',engine='xlsxwriter')
 
-df_sort.to_csv('PM25_2025JanToApr_HourlyData.csv',index=False)
+df_sort.to_csv('PM25_2025JanToApr_HourlyData_LOG.csv',index=False)
 
 
 

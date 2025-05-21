@@ -14,8 +14,8 @@ SECTION 1. sequence prepare
 '''
 1-1) open csv
 '''
-dir_ = '/data/aqf3/beiming.tang/DAFCOM/code/step4_ML/IncludeJulianDay/Test_Y_Scale/'
-pattern = 'PM25_2025JanToApr_HourlyData.csv'
+dir_ = '/data/aqf3/beiming.tang/DAFCOM/code/step4_ML_LSTM/IncludeJulianDay/Exclude_Spatial/Log_PM25/'
+pattern = 'PM25_2025JanToApr_HourlyData_LOG.csv'
 df = pd.read_csv(dir_+pattern)
 
 '''
@@ -44,16 +44,16 @@ for i in range(len(site_list)):
             if time_start+timedelta(hours=time_step) == time_end:
                 squence_line_start_list.append(i)
                 
-#print(len(squence_line_start_list))
+print(len(squence_line_start_list))
 
 '''
 1-4) select features
 '''
-features = ['bias_pm25',
+features = ['log_pm25',
             'v1_blh','v2_d2m','v3_e','v4_sp','v5_t2m','v6_tp','v7_u10','v8_v10','v9_aod','v10_luc',
             'v11_elevation','v12_population','v13_ufs_pm25','v14_e_bc','v15_e_nh3','v16_e_nox','v17_e_voc','v18_e_pm25','v19_e_so2',
-            'v20_lon','v21_lat','v22_d1','v23_d2','v24_d3','v24_d4','v25_d5','hour_utc','day_of_year']
-target= 'bias_pm25'
+            'hour_utc','day_of_year']
+target= 'log_pm25'
 
 data_x = df[features[1:]]
 data_y =  df[features[0]]
@@ -66,11 +66,17 @@ data_y = data_y.rename(columns={0:target})
 1-5) normalize data
 '''
 from sklearn.preprocessing import RobustScaler
+import joblib
+
 scaler_x = RobustScaler()
 data_scaled_X = scaler_x.fit_transform(data_x)
 
 scaler_y = RobustScaler()
 data_scaled_Y = scaler_y.fit_transform(data_y)
+
+
+joblib.dump(scaler_x, 'Scaler_X.save')
+joblib.dump(scaler_y, 'Scaler_Y.save')
 
 '''
 1-6) create sequence
