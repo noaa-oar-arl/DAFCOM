@@ -61,7 +61,7 @@ def GetITP(time_input, lat_input, lon_input, variable_input):
     c = 'no_value'
     for i in range(1,2400):
         if (lat_model[i-1] -lat_obs)*(lat_model[i]-lat_obs) <0:
-            for j in range(6000):
+            for j in range(1,6000):
                 if (lon_model[j-1]-lon_obs)*(lon_model[j]-lon_obs) <0:
                     x1 = np.abs((lon_model[j-1]-lon_obs)/(lon_model[j-1]-lon_model[j]))
                     x2 = np.abs((lon_model[j]-lon_obs)/(lon_model[j-1]-lon_model[j]))
