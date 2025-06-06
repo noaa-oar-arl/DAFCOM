@@ -1,0 +1,103 @@
+# DAFCOM Data Processor - Reanalysis Mode Configuration Example
+# This is a simplified configuration for reanalysis mode processing
+
+name: "DAFCOM Reanalysis Configuration"
+version: "0.1.0"
+mode: "reanalysis"
+
+# Logging configuration
+logging:
+  level: "INFO"
+  file: "/path/to/logs/reanalysis_processor.log"
+  console_output: true
+
+# Path configurations
+paths:
+  input:
+    base_dir: "/data/input/reanalysis"
+    meteorology: "${paths.input.base_dir}/era5"
+    satellite:
+      aod: "${paths.input.base_dir}/modis"
+      ndvi: "${paths.input.base_dir}/modis/ndvi"
+    observations: "${paths.input.base_dir}/observations"
+
+  output:
+    base_dir: "/data/output/reanalysis"
+    processed: "${paths.output.base_dir}/processed"
+    visualizations: "${paths.output.base_dir}/viz"
+
+# Grid configuration
+grid:
+  bbox:
+    lat_min: 25.0
+    lon_min: -125.0
+    lat_max: 49.0
+    lon_max: -65.0
+  resolution: 0.01
+  interpolation:
+    method: "bilinear"
+
+# Time configuration for historical period
+time:
+  start_date: "2023-01-01"
+  end_date: "2023-12-31"
+  frequency: "1H"
+
+# Processing options
+processing:
+  parallel:
+    enabled: true
+    n_workers: 8
+
+  # Quality control for historical data is more stringent
+  quality_control:
+    remove_outliers: true
+    z_score_threshold: 3.0
+    valid_min_max:
+      PM25: [0, 500]
+      temperature: [-50, 50]
+
+  # Gap filling is more aggressive for reanalysis
+  fill_gaps:
+    enabled: true
+    method: "interpolate"
+    max_gap_size: 6  # Can fill larger gaps in reanalysis mode
+
+  # Feature engineering for training ML models
+  feature_engineering:
+    create_time_features: true
+    create_spatial_features: true
+    transformations:
+      - name: "log"
+        variables: ["PM25"]
+    create_lag_features: true
+    lag_features:
+      - variable: "PM25"
+        lags: [1, 3, 6, 12, 24]
+
+# Data sources for reanalysis
+observations:
+  sources:
+    - name: "airnow"
+      priority: 1
+      variables:
+        - name: "PM25"
+          min_valid: 0
+          max_valid: 500
+    - name: "aqs"
+      priority: 2
+
+meteorology:
+  sources:
+    - name: "ERA5"
+      priority: 1
+
+# Comprehensive feature extraction for training
+ml:
+  target_variables:
+    - "PM25"
+  feature_selection:
+    method: "recursive_feature_elimination"
+  train_test_split:
+    method: "temporal"
+    test_size: 0.2

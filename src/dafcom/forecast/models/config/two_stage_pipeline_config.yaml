@@ -1,0 +1,90 @@
+# Two-Stage Pipeline Configuration
+
+# Output directory for saving models and results
+output_dir: ./models/pipeline
+
+# Stage 1: LSTM model configuration
+stage1:
+  model_type: lstm
+  output_dir: ./models/pipeline/stage1
+
+  # Data preparation settings
+  data_preparation:
+    feature_columns:
+      - v1_blh
+      - v2_d2m
+      - v3_e
+      - v4_sp
+      - v5_t2m
+      - v6_tp
+      - v7_u10
+      - v8_v10
+      - v9_aod
+      - v10_luc
+      - v11_elevation
+      - v12_population
+      - v13_ufs_pm25
+      - hour_utc
+      - day_of_year
+    target_columns:
+      - log_pm25
+    time_steps: 24
+    forecast_steps: 24
+    scaling_method: standard
+
+  # LSTM model settings
+  model:
+    lstm_units: [64, 32]
+    dropout_rate: 0.2
+    learning_rate: 0.001
+    batch_size: 32
+    epochs: 50
+    early_stopping_patience: 10
+    loss: mse
+    metrics:
+      - mae
+    validation_split: 0.2
+
+# Stage 2: XGBoost model configuration
+stage2:
+  output_dir: ./models/pipeline/stage2
+
+  # Feature columns for XGBoost (includes LSTM predictions)
+  feature_columns:
+    - v1_blh
+    - v2_d2m
+    - v3_e
+    - v4_sp
+    - v5_t2m
+    - v6_tp
+    - v7_u10
+    - v8_v10
+    - v9_aod
+    - v10_luc
+    - v11_elevation
+    - v12_population
+    - v13_ufs_pm25
+    - hour_utc
+    - day_of_year
+    - lstm_predictions
+
+  # Target column for XGBoost
+  target_column: log_pm25
+
+  # XGBoost parameters
+  objective: reg:squarederror
+  max_depth: 6
+  learning_rate: 0.1
+  n_estimators: 100
+  subsample: 0.8
+  colsample_bytree: 0.8
+  gamma: 0
+  min_child_weight: 1
+  early_stopping_rounds: 10
+
+  # Whether to perform hyperparameter tuning
+  perform_hyperparameter_tuning: false
+  hyperparameter_tuning_iterations: 10
+  cv_folds: 3
+  random_state: 42
+  validation_split: 0.2

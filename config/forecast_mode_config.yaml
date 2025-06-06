@@ -1,0 +1,110 @@
+# DAFCOM Data Processor - Forecast Mode Configuration Example
+# This is a simplified configuration for operational forecast mode processing
+
+name: "DAFCOM Forecast Configuration"
+version: "0.1.0"
+mode: "forecast"
+
+# Logging configuration
+logging:
+  level: "INFO"
+  file: "/path/to/logs/forecast_processor.log"
+  console_output: true
+
+# Path configurations
+paths:
+  input:
+    base_dir: "/data/input/forecast"
+    meteorology: "${paths.input.base_dir}/gfs"
+    satellite:
+      aod: "${paths.input.base_dir}/modis_nrt"
+    observations: "${paths.input.base_dir}/airnow_api"
+
+  output:
+    base_dir: "/data/output/forecast"
+    processed: "${paths.output.base_dir}/processed"
+    visualizations: "${paths.output.base_dir}/viz"
+    web: "${paths.output.base_dir}/web"
+
+# Grid configuration - same as reanalysis for consistency
+grid:
+  bbox:
+    lat_min: 25.0
+    lon_min: -125.0
+    lat_max: 49.0
+    lon_max: -65.0
+  resolution: 0.01
+  interpolation:
+    method: "bilinear"
+
+# Time configuration for forecast
+time:
+  # Current date is determined at runtime
+  forecast:
+    cycle_hour: [0, 12]  # Run forecasts twice daily
+    lead_time: 72  # 3-day forecast
+    output_frequency: "1H"
+
+# Processing options optimized for operational speed
+processing:
+  parallel:
+    enabled: true
+    n_workers: 4
+
+  # Quality control less stringent for real-time
+  quality_control:
+    remove_outliers: true
+    z_score_threshold: 4.0  # More lenient to avoid losing data
+
+  # Gap filling needs to work with limited data
+  fill_gaps:
+    enabled: true
+    method: "nearest"  # Simpler method for operational use
+    max_gap_size: 3
+
+  # Feature engineering must match training
+  feature_engineering:
+    create_time_features: true
+    create_spatial_features: true
+    transformations:
+      - name: "log"
+        variables: ["PM25"]
+    # No lag features beyond what's available in real-time
+    create_lag_features: true
+    lag_features:
+      - variable: "PM25"
+        lags: [1, 3, 6]  # Only use available recent history
+
+# Data sources for forecast mode
+observations:
+  sources:
+    - name: "airnow_api"  # Real-time API
+      priority: 1
+      variables:
+        - name: "PM25"
+          min_valid: 0
+          max_valid: 500
+
+meteorology:
+  sources:
+    - name: "GFS"  # Forecast model instead of reanalysis
+      priority: 1
+
+# Output configuration optimized for dissemination
+output:
+  formats:
+    - "netcdf"
+    - "geojson"  # For web mapping
+  frequency: "1H"
+  visualization:
+    enabled: true
+    formats:
+      - "png"
+    create_maps: true
+
+  # Web output specific settings
+  web_output:
+    enabled: true
+    update_frequency: "1H"
+    create_animations: true
+    include_previous_days: 2

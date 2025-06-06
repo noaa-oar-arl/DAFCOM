@@ -1,0 +1,43 @@
+# XGBoost Model Configuration
+
+# Output directory for saving models and results
+output_dir: ./models/xgboost
+
+# Feature columns for XGBoost
+feature_columns:
+  - v1_blh
+  - v2_d2m
+  - v3_e
+  - v4_sp
+  - v5_t2m
+  - v6_tp
+  - v7_u10
+  - v8_v10
+  - v9_aod
+  - v10_luc
+  - v11_elevation
+  - v12_population
+  - v13_ufs_pm25
+  - hour_utc
+  - day_of_year
+
+# Target column for XGBoost (use log transformed PM2.5)
+target_column: log_pm25
+
+# XGBoost parameters
+objective: reg:squarederror
+max_depth: 6
+learning_rate: 0.1
+n_estimators: 100
+subsample: 0.8
+colsample_bytree: 0.8
+gamma: 0
+min_child_weight: 1
+early_stopping_rounds: 10
+
+# Whether to perform hyperparameter tuning
+perform_hyperparameter_tuning: false
+hyperparameter_tuning_iterations: 10
+cv_folds: 3
+random_state: 42
+validation_split: 0.2

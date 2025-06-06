@@ -1,0 +1,128 @@
+################################################################################
+# DAFCOM Observation Data Configuration
+################################################################################
+# This configuration file defines settings for retrieving and processing
+# observational data using monetio integration.
+################################################################################
+
+################################################################################
+# Global Settings
+################################################################################
+# Settings that control overall behavior of the observation processing system
+global:
+  # Number of parallel workers for processing
+  n_workers: 4
+
+  # Memory limit for processing (GB)
+  memory_limit_gb: 2
+
+  # Whether to use distributed processing
+  use_distributed: false
+
+################################################################################
+# Input Data Configuration
+################################################################################
+# Controls how observational data is accessed and filtered
+input:
+  # Default data sources in priority order (highest priority first)
+  sources:
+    - airnow
+    - aqs
+    - improve
+
+  # Time range to process (if not specified in command line)
+  time_range:
+    # Default to last 30 days if not specified
+    days_back: 30
+
+  # Spatial filter boundaries
+  bbox:
+    lat_min: 25.0
+    lon_min: -125.0
+    lat_max: 49.0
+    lon_max: -65.0
+
+  # Local file paths (used if remote access is not available)
+  local_files:
+    airnow: "/data/aqf3/beiming.tang/DATA/gs_data/AirNow/2025/AirNow_20250401_20250501.nc"
+    aqs: ""
+    improve: ""
+
+  # Variables to retrieve by default
+  species:
+    - PM25
+    #- OZONE
+    #- NO2
+    #- NO
+    #- CO
+
+################################################################################
+# Data Processing
+################################################################################
+# Settings for data cleaning and transformation
+processing:
+  # Temporal resampling frequency
+  resample: "H"  # H for hourly, D for daily, etc.
+
+  # Quality control settings
+  quality_control:
+    # Threshold for valid data (minimum percent of non-missing values)
+    valid_threshold: 0.5
+
+    # Valid ranges by parameter
+    valid_ranges:
+      PM25: [0, 1000]
+      OZONE: [0, 200]
+      NO2: [0, 100]
+      NO: [0, 100]
+      CO: [0, 15000]
+
+    # Handle missing data
+    # Options: drop, interpolate, fill
+    missing_method: "drop"
+
+    # Quality flags to exclude
+    exclude_flags: [4, 5, 6]
+
+  # Duplicate handling when combining sources
+  # Options: first (keep first), last (keep last), mean
+  duplicate_method: "first"
+
+################################################################################
+# Output Configuration
+################################################################################
+# Controls how processed observation data is saved
+output:
+  # Output directory
+  output_dir: "./processed_obs/"
+
+  # Default output format
+  # Options: netcdf, csv
+  default_format: "netcdf"
+
+  # Compression settings for netCDF
+  compression:
+    engine: "netcdf4"
+    complevel: 4
+    shuffle: true
+    zlib: true
+
+  # Whether to include metadata with source information
+  include_source_metadata: true
+
+  # Whether to include quality flags in output
+  include_quality_flags: true
+
+################################################################################
+# Logging Configuration
+################################################################################
+# Controls logging behavior
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR
+  level: "INFO"
+
+  # Log file path (if null, log to console only)
+  log_file: "./obs_processing.log"
+
+  # Whether to log detailed performance statistics
+  log_performance: true

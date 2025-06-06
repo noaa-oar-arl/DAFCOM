@@ -1,0 +1,284 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dafcom"
+version = "1.0.0"
+description = "DAFCOM Air Quality Forecast Mode - Optimized implementation with ML bias correction"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "DAFCOM Team", email = "dafcom@example.com"}
+]
+maintainers = [
+    {name = "DAFCOM Team", email = "dafcom@example.com"}
+]
+keywords = [
+    "air-quality",
+    "forecasting",
+    "machine-learning",
+    "atmospheric-modeling",
+    "bias-correction",
+    "ufs-aqm",
+    "pm25",
+    "environmental-modeling"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Atmospheric Science",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence"
+]
+requires-python = ">=3.9"
+
+# Core runtime dependencies
+dependencies = [
+    "numpy>=1.24.0",
+    "pandas>=1.5.0",
+    "scipy>=1.10.0",
+    "xarray>=2023.1.0",
+    "dask[complete]>=2023.1.0",
+    "netcdf4>=1.6.0",
+    "h5netcdf>=1.2.0",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0",
+    "scikit-learn>=1.2.0",
+    "tensorflow>=2.12.0",
+    "xgboost>=1.7.0",
+    "rasterio>=1.3.0",
+    "pyproj>=3.4.0",
+    "h5py>=3.8.0",
+    "requests>=2.28.0",
+    "tqdm>=4.64.0",
+    "click>=8.0.0",
+    "bottleneck>=1.3.5",
+    "numexpr>=2.8.4",
+    "joblib>=1.2.0"
+]
+
+# Optional dependencies for different use cases
+[project.optional-dependencies]
+# Visualization dependencies
+viz = [
+    "matplotlib>=3.6.0",
+    "seaborn>=0.12.0",
+    "plotly>=5.0.0",
+    "cartopy>=0.21.0"
+]
+
+# Development dependencies
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0"
+]
+
+# Documentation dependencies
+docs = [
+    "sphinx>=6.0.0",
+    "sphinx-rtd-theme>=1.2.0",
+    "myst-parser>=1.0.0",
+    "sphinx-autodoc-typehints>=1.19.0"
+]
+
+# Performance monitoring
+performance = [
+    "memory-profiler>=0.58.0",
+    "line-profiler>=3.3.0",
+    "colorlog>=6.7.0"
+]
+
+# Jupyter notebook support
+jupyter = [
+    "jupyter>=1.0.0",
+    "ipykernel>=6.0.0",
+    "jupyterlab>=3.0.0"
+]
+
+# Legacy Excel support (for backwards compatibility)
+excel = [
+    "openpyxl>=3.1.0",
+    "xlsxwriter>=3.0.0"
+]
+
+# All optional dependencies
+all = [
+    "dafcom-forecast[viz,dev,docs,performance,jupyter,excel]"
+]
+
+[project.urls]
+Homepage = "https://github.com/dafcom/forecast-mode"
+Documentation = "https://dafcom-forecast.readthedocs.io/"
+Repository = "https://github.com/dafcom/forecast-mode.git"
+Issues = "https://github.com/dafcom/forecast-mode/issues"
+Changelog = "https://github.com/dafcom/forecast-mode/blob/main/CHANGELOG.md"
+
+[project.scripts]
+dafcom-forecast = "forecast_mode.cli:main"
+run-forecast = "forecast_mode.cli:main"
+
+[tool.setuptools]
+packages = ["forecast_mode"]
+package-dir = {"" = "sorc"}
+
+[tool.setuptools.package-data]
+forecast_mode = ["*.yaml", "*.yml", "*.json"]
+
+# Black code formatting configuration
+[tool.black]
+line-length = 88
+target-version = ['py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+# isort import sorting configuration
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_third_party = [
+    "numpy", "pandas", "scipy", "xarray", "dask",
+    "sklearn", "tensorflow", "xgboost", "rasterio",
+    "pydantic", "yaml", "click", "tqdm"
+]
+
+# Flake8 linting configuration
+[tool.flake8]
+max-line-length = 88
+extend-ignore = [
+    "E203",  # whitespace before ':'
+    "E501",  # line too long (handled by black)
+    "W503",  # line break before binary operator
+]
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    ".eggs",
+    "*.egg-info",
+    ".venv",
+    ".mypy_cache"
+]
+
+# MyPy type checking configuration
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "scipy.*",
+    "sklearn.*",
+    "tensorflow.*",
+    "xgboost.*",
+    "rasterio.*",
+    "cartopy.*",
+    "netCDF4.*",
+    "h5py.*"
+]
+ignore_missing_imports = true
+
+# Pytest configuration
+[tool.pytest.ini_options]
+testpaths = ["tests", "sorc"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--verbose",
+    "--tb=short",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=forecast_mode",
+    "--cov-report=term-missing",
+    "--cov-report=html:htmlcov",
+    "--cov-report=xml:coverage.xml"
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "gpu: marks tests that require GPU support"
+]
+filterwarnings = [
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+    "ignore::FutureWarning"
+]
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["sorc/forecast_mode"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/examples/*"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\bProtocol\\):",
+    "@(abc\\.)?abstractmethod"
+]
+
+# Bandit security linting
+[tool.bandit]
+exclude_dirs = ["tests", "examples"]
+skips = ["B101", "B601"]
+
+# Pylint configuration
+[tool.pylint.messages_control]
+disable = [
+    "C0103",  # invalid-name
+    "C0114",  # missing-module-docstring
+    "R0903",  # too-few-public-methods
+    "R0913",  # too-many-arguments
+    "W0613",  # unused-argument
+]
+
+[tool.pylint.format]
+max-line-length = 88
