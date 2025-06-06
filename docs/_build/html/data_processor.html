@@ -1,0 +1,1402 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>DAFCOM Data Processor &#8212; DAFCOM 0.1.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=01f34227"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'data_processor';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Configuration Guide" href="configuration.html" />
+    <link rel="prev" title="Usage" href="usage.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">DAFCOM 0.1.0 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="introduction.html">
+    Introduction
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="usage.html">
+    Usage
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    DAFCOM Data Processor
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="configuration.html">
+    Configuration Guide
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="cookbook.html">
+    Cookbook
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="visualization.html">
+    Visualization Guide
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="performance.html">
+    Performance Tuning
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="troubleshooting.html">
+    Troubleshooting
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="api/modules.html">
+    dafcom
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="contributing.html">
+    Contributing
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="changelog.html">
+    Changelog
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/your-username/DAFCOM" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/your-username/DAFCOM" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="introduction.html">
+    Introduction
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="usage.html">
+    Usage
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    DAFCOM Data Processor
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="configuration.html">
+    Configuration Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="cookbook.html">
+    Cookbook
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="visualization.html">
+    Visualization Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="performance.html">
+    Performance Tuning
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="troubleshooting.html">
+    Troubleshooting
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/modules.html">
+    dafcom
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="contributing.html">
+    Contributing
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="changelog.html">
+    Changelog
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+          
+          
+            <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/your-username/DAFCOM" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/your-username/DAFCOM" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">DAFCOM Data Processor</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="dafcom-data-processor">
+<h1>DAFCOM Data Processor<a class="headerlink" href="#dafcom-data-processor" title="Link to this heading">#</a></h1>
+<nav class="contents local" id="table-of-contents">
+<p class="topic-title">Table of Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#overview" id="id2">Overview</a></p>
+<ul>
+<li><p><a class="reference internal" href="#key-capabilities" id="id3">Key Capabilities</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#architecture" id="id4">Architecture</a></p></li>
+<li><p><a class="reference internal" href="#data-processing-workflows" id="id5">Data Processing Workflows</a></p>
+<ul>
+<li><p><a class="reference internal" href="#reanalysis-mode" id="id6">Reanalysis Mode</a></p></li>
+<li><p><a class="reference internal" href="#forecast-mode" id="id7">Forecast Mode</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#configuration" id="id8">Configuration</a></p>
+<ul>
+<li><p><a class="reference internal" href="#example-configuration" id="id9">Example Configuration</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#file-i-o-operations" id="id10">File I/O Operations</a></p>
+<ul>
+<li><p><a class="reference internal" href="#input-formats" id="id11">Input Formats</a></p></li>
+<li><p><a class="reference internal" href="#output-formats" id="id12">Output Formats</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#regridding-and-interpolation" id="id13">Regridding and Interpolation</a></p>
+<ul>
+<li><p><a class="reference internal" href="#regridding-methods" id="id14">Regridding Methods</a></p></li>
+<li><p><a class="reference internal" href="#vertical-interpolation" id="id15">Vertical Interpolation</a></p></li>
+<li><p><a class="reference internal" href="#example-regridding-workflow" id="id16">Example Regridding Workflow</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#aod-data-processing" id="id17">AOD Data Processing</a></p>
+<ul>
+<li><p><a class="reference internal" href="#aod-gap-filling" id="id18">AOD Gap Filling</a></p></li>
+<li><p><a class="reference internal" href="#aod-quality-control" id="id19">AOD Quality Control</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#meteorological-data-processing" id="id20">Meteorological Data Processing</a></p>
+<ul>
+<li><p><a class="reference internal" href="#key-meteorological-variables" id="id21">Key Meteorological Variables</a></p></li>
+<li><p><a class="reference internal" href="#processing-steps" id="id22">Processing Steps</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#air-quality-data-processing" id="id23">Air Quality Data Processing</a></p>
+<ul>
+<li><p><a class="reference internal" href="#data-sources" id="id24">Data Sources</a></p></li>
+<li><p><a class="reference internal" href="#id1" id="id25">Processing Steps</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#feature-engineering" id="id26">Feature Engineering</a></p>
+<ul>
+<li><p><a class="reference internal" href="#temporal-features" id="id27">Temporal Features</a></p></li>
+<li><p><a class="reference internal" href="#spatial-features" id="id28">Spatial Features</a></p></li>
+<li><p><a class="reference internal" href="#mathematical-transformations" id="id29">Mathematical Transformations</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#api-reference" id="id30">API Reference</a></p>
+<ul>
+<li><p><a class="reference internal" href="#unifiedtrainingdataprocessor" id="id31">UnifiedTrainingDataProcessor</a></p></li>
+<li><p><a class="reference internal" href="#regriddingprocessor" id="id32">RegriddingProcessor</a></p></li>
+<li><p><a class="reference internal" href="#paralleldataloader" id="id33">ParallelDataLoader</a></p></li>
+<li><p><a class="reference internal" href="#observationdataloader" id="id34">ObservationDataLoader</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#command-line-interface" id="id35">Command Line Interface</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id36">Examples</a></p>
+<ul>
+<li><p><a class="reference internal" href="#example-1-processing-meteorological-data" id="id37">Example 1: Processing Meteorological Data</a></p></li>
+<li><p><a class="reference internal" href="#example-2-combining-observations-and-model-data" id="id38">Example 2: Combining Observations and Model Data</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#troubleshooting" id="id39">Troubleshooting</a></p>
+<ul>
+<li><p><a class="reference internal" href="#common-issues" id="id40">Common Issues</a></p></li>
+<li><p><a class="reference internal" href="#diagnostic-tools" id="id41">Diagnostic Tools</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#best-practices" id="id42">Best Practices</a></p></li>
+<li><p><a class="reference internal" href="#performance-optimization" id="id43">Performance Optimization</a></p></li>
+<li><p><a class="reference internal" href="#conclusion" id="id44">Conclusion</a></p></li>
+</ul>
+</nav>
+<section id="overview">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Overview</a><a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
+<p>The DAFCOM Data Processor is a core component of the Data Analytics for Air Quality Forecasting with Operational Models
+framework. It handles the preprocessing, transformation, and preparation of various input data sources required for both
+training machine learning models and generating operational air quality forecasts.</p>
+<p>The data processor operates in two primary modes:</p>
+<ol class="arabic simple">
+<li><p><strong>Reanalysis Mode</strong>: Processes historical data for training and validation of machine learning models</p></li>
+<li><p><strong>Forecast Mode</strong>: Processes real-time data for operational air quality predictions</p></li>
+</ol>
+<section id="key-capabilities">
+<h3><a class="toc-backref" href="#id3" role="doc-backlink">Key Capabilities</a><a class="headerlink" href="#key-capabilities" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>Data Ingestion</strong>: Reads various formats of meteorological, air quality, and satellite data</p></li>
+<li><p><strong>Spatial Processing</strong>: Performs regridding, interpolation, and coordinate transformations</p></li>
+<li><p><strong>Temporal Processing</strong>: Handles time series alignment, aggregation, and feature engineering</p></li>
+<li><p><strong>Data Cleaning</strong>: Performs quality control, gap filling, and outlier detection</p></li>
+<li><p><strong>Data Fusion</strong>: Combines multiple data sources into unified datasets</p></li>
+<li><p><strong>Feature Engineering</strong>: Creates derived variables and transforms for machine learning</p></li>
+<li><p><strong>Data Export</strong>: Saves processed data in various formats for downstream analysis</p></li>
+</ul>
+</section>
+</section>
+<section id="architecture">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Architecture</a><a class="headerlink" href="#architecture" title="Link to this heading">#</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The DAFCOM Data Processor architecture includes several key components:</p>
+<ul class="simple">
+<li><p><strong>Input Data Sources</strong>: Meteorological data, satellite observations, air quality measurements</p></li>
+<li><p><strong>Processing Components</strong>: File I/O, spatial/temporal processing, quality control, data fusion</p></li>
+<li><p><strong>Output Products</strong>: Training datasets, validation datasets, forecast inputs</p></li>
+<li><p><strong>Processing Modes</strong>: Reanalysis (historical) and Forecast (operational) modes</p></li>
+</ul>
+</div>
+<p>The data processor is organized into a collection of modular components that can be combined into processing pipelines:</p>
+<ul class="simple">
+<li><p><strong>File I/O Modules</strong>: Handle reading and writing data in various formats (NetCDF, CSV, HDF5)</p></li>
+<li><p><strong>Spatial Processors</strong>: Perform regridding, interpolation, and coordinate transformations</p></li>
+<li><p><strong>Temporal Processors</strong>: Handle time series alignment, resampling, and time-based feature engineering</p></li>
+<li><p><strong>Quality Control Modules</strong>: Handle missing data, outliers, and data validation</p></li>
+<li><p><strong>Fusion Modules</strong>: Combine multiple data sources using various techniques</p></li>
+<li><p><strong>Feature Engineering Modules</strong>: Create derived variables for machine learning</p></li>
+</ul>
+</section>
+<section id="data-processing-workflows">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Data Processing Workflows</a><a class="headerlink" href="#data-processing-workflows" title="Link to this heading">#</a></h2>
+<section id="reanalysis-mode">
+<h3><a class="toc-backref" href="#id6" role="doc-backlink">Reanalysis Mode</a><a class="headerlink" href="#reanalysis-mode" title="Link to this heading">#</a></h3>
+<p>In reanalysis mode, the data processor prepares historical data for training machine learning models. The workflow typically includes:</p>
+<ol class="arabic simple">
+<li><p><strong>Historical Data Collection</strong>: Gather meteorological, air quality, and satellite data for the training period</p></li>
+<li><p><strong>Consistent Grid Creation</strong>: Regrid all input data to a common spatial resolution</p></li>
+<li><p><strong>Temporal Alignment</strong>: Ensure all data sources are temporally aligned</p></li>
+<li><p><strong>Feature Engineering</strong>: Create additional features like temporal aggregations, spatial statistics, and derived variables</p></li>
+<li><p><strong>Quality Control</strong>: Filter out bad data points and fill gaps where possible</p></li>
+<li><p><strong>Train/Test Splitting</strong>: Prepare data for model training and validation</p></li>
+<li><p><strong>Export</strong>: Save processed data in ML-ready formats</p></li>
+</ol>
+<p>The reanalysis workflow processes multiple data types:</p>
+<ul class="simple">
+<li><p><strong>Meteorological Data</strong>: Temperature, wind, boundary layer height, etc.</p></li>
+<li><p><strong>Satellite Data</strong>: AOD, NDVI, land use/land cover, etc.</p></li>
+<li><p><strong>Air Quality Observations</strong>: PM2.5, NO2, Ozone, etc.</p></li>
+<li><p><strong>Emissions Data</strong>: Anthropogenic and biogenic emissions</p></li>
+<li><p><strong>Static Features</strong>: Population density, road networks, elevation, etc.</p></li>
+</ul>
+</section>
+<section id="forecast-mode">
+<h3><a class="toc-backref" href="#id7" role="doc-backlink">Forecast Mode</a><a class="headerlink" href="#forecast-mode" title="Link to this heading">#</a></h3>
+<p>In forecast mode, the data processor prepares real-time data for operational air quality predictions:</p>
+<ol class="arabic simple">
+<li><p><strong>Real-time Data Collection</strong>: Gather latest meteorological forecasts, satellite data, and air quality observations</p></li>
+<li><p><strong>Consistent Grid Creation</strong>: Regrid all input data to a common spatial resolution</p></li>
+<li><p><strong>Feature Engineering</strong>: Apply the same transformations used during model training</p></li>
+<li><p><strong>Missing Data Handling</strong>: Apply strategies to handle data gaps in real-time context</p></li>
+<li><p><strong>Export</strong>: Prepare data for inference by trained models</p></li>
+</ol>
+</section>
+</section>
+<section id="configuration">
+<h2><a class="toc-backref" href="#id8" role="doc-backlink">Configuration</a><a class="headerlink" href="#configuration" title="Link to this heading">#</a></h2>
+<p>The data processor is highly configurable through YAML configuration files. Configuration parameters include:</p>
+<ul class="simple">
+<li><p><strong>Input/Output Paths</strong>: Locations for input data and output directories</p></li>
+<li><p><strong>Spatial Settings</strong>: Grid resolutions, domains, and interpolation methods</p></li>
+<li><p><strong>Temporal Settings</strong>: Time ranges, frequencies, and aggregation methods</p></li>
+<li><p><strong>Processing Options</strong>: Quality control thresholds, feature engineering options</p></li>
+<li><p><strong>Logging Options</strong>: Verbosity and log file locations</p></li>
+</ul>
+<section id="example-configuration">
+<h3><a class="toc-backref" href="#id9" role="doc-backlink">Example Configuration</a><a class="headerlink" href="#example-configuration" title="Link to this heading">#</a></h3>
+<p>Below is a simplified example of the data processor configuration file. Complete example configuration files can be found in the <code class="docutils literal notranslate"><span class="pre">config</span></code> directory:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">data_processor_config.yaml</span></code> - Comprehensive example with all available options</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reanalysis_mode_config.yaml</span></code> - Configuration specific to reanalysis mode</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">forecast_mode_config.yaml</span></code> - Configuration specific to forecast mode</p></li>
+</ul>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data processor configuration</span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;DAFCOM</span><span class="nv"> </span><span class="s">Data</span><span class="nv"> </span><span class="s">Processor</span><span class="nv"> </span><span class="s">Configuration&quot;</span>
+<span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0.1.0&quot;</span>
+<span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;reanalysis&quot;</span><span class="w">  </span><span class="c1"># Options: reanalysis, forecast</span>
+
+<span class="nt">logging</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;INFO&quot;</span>
+<span class="w">  </span><span class="nt">file</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/path/to/logs/data_processor.log&quot;</span>
+<span class="w">  </span><span class="nt">console_output</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="nt">paths</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">input</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">base_dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/path/to/input/data&quot;</span>
+<span class="w">    </span><span class="nt">meteorology</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${paths.input.base_dir}/meteorology&quot;</span>
+<span class="w">    </span><span class="nt">satellite</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">aod</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${paths.input.base_dir}/satellite/aod&quot;</span>
+<span class="w">    </span><span class="nt">observations</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${paths.input.base_dir}/observations&quot;</span>
+
+<span class="w">  </span><span class="nt">output</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">base_dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/path/to/output/data&quot;</span>
+<span class="w">    </span><span class="nt">processed</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${paths.output.base_dir}/processed&quot;</span>
+<span class="w">    </span><span class="nt">visualizations</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${paths.output.base_dir}/visualizations&quot;</span>
+
+<span class="nt">grid</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">resolution</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.01</span><span class="w">  </span><span class="c1"># degrees</span>
+<span class="w">  </span><span class="nt">bbox</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">lat_min</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">25.0</span>
+<span class="w">    </span><span class="nt">lon_min</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-125.0</span>
+<span class="w">    </span><span class="nt">lat_max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">49.0</span>
+<span class="w">    </span><span class="nt">lon_max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-65.0</span>
+<span class="w">  </span><span class="nt">interpolation</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;bilinear&quot;</span>
+
+<span class="nt">time</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">start_date</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2025-01-01&quot;</span>
+<span class="w">  </span><span class="nt">end_date</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2025-06-01&quot;</span>
+<span class="w">  </span><span class="nt">frequency</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1H&quot;</span><span class="w">  </span><span class="c1"># 1 hour</span>
+
+<span class="nt">processing</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">fill_gaps</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;interpolate&quot;</span>
+<span class="w">  </span><span class="nt">quality_control</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">remove_outliers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">z_score_threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3.0</span>
+<span class="w">  </span><span class="nt">feature_engineering</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">create_time_features</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">transformations</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;log&quot;</span>
+<span class="w">        </span><span class="nt">variables</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;PM25&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;NO2&quot;</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="file-i-o-operations">
+<h2><a class="toc-backref" href="#id10" role="doc-backlink">File I/O Operations</a><a class="headerlink" href="#file-i-o-operations" title="Link to this heading">#</a></h2>
+<p>The data processor supports multiple file formats and data sources:</p>
+<section id="input-formats">
+<h3><a class="toc-backref" href="#id11" role="doc-backlink">Input Formats</a><a class="headerlink" href="#input-formats" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>NetCDF</strong>: Meteorological data, model outputs, gridded observations</p></li>
+<li><p><strong>CSV</strong>: Point observations, station metadata</p></li>
+<li><p><strong>HDF5</strong>: Satellite products, large arrays</p></li>
+<li><p><strong>GeoTIFF</strong>: Land use data, static features</p></li>
+<li><p><strong>Shapefile</strong>: Administrative boundaries, road networks</p></li>
+</ul>
+</section>
+<section id="output-formats">
+<h3><a class="toc-backref" href="#id12" role="doc-backlink">Output Formats</a><a class="headerlink" href="#output-formats" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>NetCDF</strong>: Processed gridded data</p></li>
+<li><p><strong>CSV/Parquet</strong>: ML-ready tabular data</p></li>
+<li><p><strong>Zarr</strong>: Cloud-optimized data for distributed processing</p></li>
+<li><p><strong>HDF5</strong>: Hierarchical data format for complex datasets</p></li>
+</ul>
+<p>The data processor handles different time dimensions, coordinate systems, and metadata structures, normalizing them into consistent formats for downstream processing.</p>
+</section>
+</section>
+<section id="regridding-and-interpolation">
+<h2><a class="toc-backref" href="#id13" role="doc-backlink">Regridding and Interpolation</a><a class="headerlink" href="#regridding-and-interpolation" title="Link to this heading">#</a></h2>
+<p>The data processor uses multiple regridding and interpolation methods to transform data between different spatial resolutions and projections:</p>
+<section id="regridding-methods">
+<h3><a class="toc-backref" href="#id14" role="doc-backlink">Regridding Methods</a><a class="headerlink" href="#regridding-methods" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>Bilinear</strong>: Standard bilinear interpolation for continuous fields</p></li>
+<li><p><strong>Nearest Neighbor</strong>: For categorical data like land use/land cover</p></li>
+<li><p><strong>Conservative</strong>: For flux-preserving transformations</p></li>
+<li><p><strong>Patch Recovery</strong>: For better handling of discontinuities</p></li>
+</ul>
+</section>
+<section id="vertical-interpolation">
+<h3><a class="toc-backref" href="#id15" role="doc-backlink">Vertical Interpolation</a><a class="headerlink" href="#vertical-interpolation" title="Link to this heading">#</a></h3>
+<p>For 3D meteorological fields, the processor can interpolate between pressure levels or height levels using:</p>
+<ul class="simple">
+<li><p><strong>Linear</strong>: Standard pressure/height interpolation</p></li>
+<li><p><strong>Log-Linear</strong>: For pressure level interpolation</p></li>
+<li><p><strong>Cubic Spline</strong>: For smoother interpolation</p></li>
+</ul>
+</section>
+<section id="example-regridding-workflow">
+<h3><a class="toc-backref" href="#id16" role="doc-backlink">Example Regridding Workflow</a><a class="headerlink" href="#example-regridding-workflow" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p>Define source and target grids</p></li>
+<li><p>Select appropriate regridding method</p></li>
+<li><p>Apply regridding with careful handling of coordinate systems</p></li>
+<li><p>Validate results with quality checks</p></li>
+<li><p>Add appropriate metadata to track the transformation</p></li>
+</ol>
+</section>
+</section>
+<section id="aod-data-processing">
+<h2><a class="toc-backref" href="#id17" role="doc-backlink">AOD Data Processing</a><a class="headerlink" href="#aod-data-processing" title="Link to this heading">#</a></h2>
+<p>Aerosol Optical Depth (AOD) data requires special processing due to gaps in satellite retrievals. The DAFCOM data processor includes specialized workflows for AOD:</p>
+<section id="aod-gap-filling">
+<h3><a class="toc-backref" href="#id18" role="doc-backlink">AOD Gap Filling</a><a class="headerlink" href="#aod-gap-filling" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p><strong>Multi-Satellite Fusion</strong>: Combine MODIS Terra, MODIS Aqua, and VIIRS data</p></li>
+<li><p><strong>Model-Based Gap Filling</strong>: Use model AOD to fill gaps in satellite retrievals</p></li>
+<li><p><strong>Spatial Interpolation</strong>: Apply smart interpolation methods that respect spatial patterns</p></li>
+<li><p><strong>Temporal Interpolation</strong>: Fill small temporal gaps using time series methods</p></li>
+</ol>
+</section>
+<section id="aod-quality-control">
+<h3><a class="toc-backref" href="#id19" role="doc-backlink">AOD Quality Control</a><a class="headerlink" href="#aod-quality-control" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Filter AOD based on quality flags</p></li>
+<li><p>Remove cloud-contaminated pixels</p></li>
+<li><p>Apply consistency checks across multiple retrievals</p></li>
+<li><p>Handle differences in satellite overpass times</p></li>
+</ul>
+</section>
+</section>
+<section id="meteorological-data-processing">
+<h2><a class="toc-backref" href="#id20" role="doc-backlink">Meteorological Data Processing</a><a class="headerlink" href="#meteorological-data-processing" title="Link to this heading">#</a></h2>
+<p>The processor handles various meteorological variables essential for air quality prediction:</p>
+<section id="key-meteorological-variables">
+<h3><a class="toc-backref" href="#id21" role="doc-backlink">Key Meteorological Variables</a><a class="headerlink" href="#key-meteorological-variables" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>2m Temperature</strong>: Surface air temperature</p></li>
+<li><p><strong>10m Wind</strong>: Wind speed and direction near the surface</p></li>
+<li><p><strong>Boundary Layer Height</strong>: Height of the atmospheric boundary layer</p></li>
+<li><p><strong>Relative Humidity</strong>: Atmospheric moisture content</p></li>
+<li><p><strong>Precipitation</strong>: Rainfall amounts</p></li>
+<li><p><strong>Surface Pressure</strong>: Atmospheric pressure at the surface</p></li>
+<li><p><strong>Radiation</strong>: Solar radiation reaching the surface</p></li>
+</ul>
+</section>
+<section id="processing-steps">
+<h3><a class="toc-backref" href="#id22" role="doc-backlink">Processing Steps</a><a class="headerlink" href="#processing-steps" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p><strong>Regridding</strong>: Transform NWP model output to the common DAFCOM grid</p></li>
+<li><p><strong>Temporal Interpolation</strong>: Ensure consistent temporal frequency</p></li>
+<li><p><strong>Derived Variables</strong>: Calculate additional variables like ventilation coefficient</p></li>
+<li><p><strong>Quality Control</strong>: Check for physical consistency and unrealistic values</p></li>
+</ol>
+</section>
+</section>
+<section id="air-quality-data-processing">
+<h2><a class="toc-backref" href="#id23" role="doc-backlink">Air Quality Data Processing</a><a class="headerlink" href="#air-quality-data-processing" title="Link to this heading">#</a></h2>
+<p>The processor handles observations from monitoring networks and prepares them for model training:</p>
+<section id="data-sources">
+<h3><a class="toc-backref" href="#id24" role="doc-backlink">Data Sources</a><a class="headerlink" href="#data-sources" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>AirNow</strong>: Real-time air quality monitoring network</p></li>
+<li><p><strong>AQS</strong>: EPA’s Air Quality System</p></li>
+<li><p><strong>CAMS</strong>: Copernicus Atmosphere Monitoring Service</p></li>
+<li><p><strong>Custom Networks</strong>: Project-specific monitoring data</p></li>
+</ul>
+</section>
+<section id="id1">
+<h3><a class="toc-backref" href="#id25" role="doc-backlink">Processing Steps</a><a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p><strong>Data Cleaning</strong>: Remove invalid or flagged observations</p></li>
+<li><p><strong>Unit Conversion</strong>: Standardize units across different networks</p></li>
+<li><p><strong>Temporal Aggregation</strong>: Create hourly, daily, or other temporal averages</p></li>
+<li><p><strong>Spatial Integration</strong>: Match observations to the common grid</p></li>
+<li><p><strong>Metadata Enhancement</strong>: Add site information, measurement methods, etc.</p></li>
+</ol>
+</section>
+</section>
+<section id="feature-engineering">
+<h2><a class="toc-backref" href="#id26" role="doc-backlink">Feature Engineering</a><a class="headerlink" href="#feature-engineering" title="Link to this heading">#</a></h2>
+<p>The data processor creates derived features to enhance model performance:</p>
+<section id="temporal-features">
+<h3><a class="toc-backref" href="#id27" role="doc-backlink">Temporal Features</a><a class="headerlink" href="#temporal-features" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>Time of Day</strong>: Hour, part of day</p></li>
+<li><p><strong>Day of Week</strong>: Weekday/weekend patterns</p></li>
+<li><p><strong>Season</strong>: Seasonal patterns</p></li>
+<li><p><strong>Holiday Flags</strong>: Special days with different emissions patterns</p></li>
+<li><p><strong>Lag Features</strong>: Previous observations for time series modeling</p></li>
+<li><p><strong>Moving Averages</strong>: Rolling statistics over various windows</p></li>
+</ul>
+</section>
+<section id="spatial-features">
+<h3><a class="toc-backref" href="#id28" role="doc-backlink">Spatial Features</a><a class="headerlink" href="#spatial-features" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>Distance to Sources</strong>: Proximity to roads, industrial sites</p></li>
+<li><p><strong>Land Use Proportions</strong>: Percentage of different land use types in surrounding areas</p></li>
+<li><p><strong>Population Density</strong>: Local and regional population metrics</p></li>
+<li><p><strong>Elevation</strong>: Absolute elevation and relative terrain features</p></li>
+<li><p><strong>Spatial Lag</strong>: Values at neighboring grid cells</p></li>
+</ul>
+</section>
+<section id="mathematical-transformations">
+<h3><a class="toc-backref" href="#id29" role="doc-backlink">Mathematical Transformations</a><a class="headerlink" href="#mathematical-transformations" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>Log Transformations</strong>: For skewed variables like PM2.5</p></li>
+<li><p><strong>Normalization</strong>: Standardizing numeric features</p></li>
+<li><p><strong>Dimensionality Reduction</strong>: PCA or other techniques for highly correlated variables</p></li>
+<li><p><strong>Polynomial Features</strong>: For capturing non-linear relationships</p></li>
+</ul>
+</section>
+</section>
+<section id="api-reference">
+<h2><a class="toc-backref" href="#id30" role="doc-backlink">API Reference</a><a class="headerlink" href="#api-reference" title="Link to this heading">#</a></h2>
+<p>The data processor exposes several key Python classes for programmatic use:</p>
+<section id="unifiedtrainingdataprocessor">
+<h3><a class="toc-backref" href="#id31" role="doc-backlink">UnifiedTrainingDataProcessor</a><a class="headerlink" href="#unifiedtrainingdataprocessor" title="Link to this heading">#</a></h3>
+<p>Main class for preparing training data that combines observations and model forecasts.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="UnifiedTrainingDataProcessor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UnifiedTrainingDataProcessor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#UnifiedTrainingDataProcessor" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><em>Path</em>) – Path to configuration YAML file</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="UnifiedTrainingDataProcessor.get_observation_data">
+<span class="sig-name descname"><span class="pre">get_observation_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#UnifiedTrainingDataProcessor.get_observation_data" title="Link to this definition">#</a></dt>
+<dd><p>Retrieve and process observation data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start_date</strong> – Start date for retrieval</p></li>
+<li><p><strong>end_date</strong> – End date for retrieval</p></li>
+<li><p><strong>species</strong> – List of species to retrieve (default from config)</p></li>
+<li><p><strong>bbox</strong> – Bounding box [lat_min, lon_min, lat_max, lon_max]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>xarray.Dataset with processed observation data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="UnifiedTrainingDataProcessor.get_model_data">
+<span class="sig-name descname"><span class="pre">get_model_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#UnifiedTrainingDataProcessor.get_model_data" title="Link to this definition">#</a></dt>
+<dd><p>Retrieve and process model forecast data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start_date</strong> – Start date for retrieval</p></li>
+<li><p><strong>end_date</strong> – End date for retrieval</p></li>
+<li><p><strong>categories</strong> – List of categories (meteorology, chemistry, aerosol)</p></li>
+<li><p><strong>variables</strong> – List of specific variables to retrieve</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>xarray.Dataset with processed model data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="UnifiedTrainingDataProcessor.interpolate_model_to_obs_locations">
+<span class="sig-name descname"><span class="pre">interpolate_model_to_obs_locations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obs_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#UnifiedTrainingDataProcessor.interpolate_model_to_obs_locations" title="Link to this definition">#</a></dt>
+<dd><p>Interpolate model data to observation locations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_data</strong> – Model forecast data as xarray Dataset</p></li>
+<li><p><strong>obs_data</strong> – Observation data as xarray Dataset</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with model values at observation locations</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="regriddingprocessor">
+<h3><a class="toc-backref" href="#id32" role="doc-backlink">RegriddingProcessor</a><a class="headerlink" href="#regriddingprocessor" title="Link to this heading">#</a></h3>
+<p>Handles spatial regridding of data between different coordinate systems and resolutions.</p>
+</section>
+<section id="paralleldataloader">
+<h3><a class="toc-backref" href="#id33" role="doc-backlink">ParallelDataLoader</a><a class="headerlink" href="#paralleldataloader" title="Link to this heading">#</a></h3>
+<p>Loads atmospheric data in parallel for improved performance.</p>
+</section>
+<section id="observationdataloader">
+<h3><a class="toc-backref" href="#id34" role="doc-backlink">ObservationDataLoader</a><a class="headerlink" href="#observationdataloader" title="Link to this heading">#</a></h3>
+<p>Specialized loader for air quality observations from multiple sources.</p>
+</section>
+</section>
+<section id="command-line-interface">
+<h2><a class="toc-backref" href="#id35" role="doc-backlink">Command Line Interface</a><a class="headerlink" href="#command-line-interface" title="Link to this heading">#</a></h2>
+<p>The data processor can be run directly from the command line. The configuration file is the primary way to control behavior - use the examples from the <code class="docutils literal notranslate"><span class="pre">config</span></code> directory as templates for your own processing needs.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run the unified training data processor with a general configuration</span>
+python<span class="w"> </span>unified_training_processor.py<span class="w"> </span>--config<span class="w"> </span>config/data_processor_config.yaml<span class="w"> </span>--start-date<span class="w"> </span><span class="m">2025</span>-01-01<span class="w"> </span>--end-date<span class="w"> </span><span class="m">2025</span>-05-31
+
+<span class="c1"># Run with a mode-specific configuration</span>
+python<span class="w"> </span>unified_training_processor.py<span class="w"> </span>--config<span class="w"> </span>config/reanalysis_mode_config.yaml<span class="w"> </span>--start-date<span class="w"> </span><span class="m">2025</span>-01-01<span class="w"> </span>--end-date<span class="w"> </span><span class="m">2025</span>-05-31
+
+<span class="c1"># Run a specific regridding task</span>
+python<span class="w"> </span>step3_regrid_0p01.py<span class="w"> </span>--variable<span class="w"> </span>pm25<span class="w"> </span>--input<span class="w"> </span>input.nc<span class="w"> </span>--output<span class="w"> </span>pm25_0p01.nc
+
+<span class="c1"># Process AOD data with gap filling</span>
+python<span class="w"> </span>process_aod_workflow.py<span class="w"> </span>--config<span class="w"> </span>config/data_processor_config.yaml<span class="w"> </span>--fill-gaps
+</pre></div>
+</div>
+</section>
+<section id="examples">
+<h2><a class="toc-backref" href="#id36" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading">#</a></h2>
+<section id="example-1-processing-meteorological-data">
+<h3><a class="toc-backref" href="#id37" role="doc-backlink">Example 1: Processing Meteorological Data</a><a class="headerlink" href="#example-1-processing-meteorological-data" title="Link to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dafcom.processor</span> <span class="kn">import</span> <span class="n">MeteoDataProcessor</span>
+
+<span class="c1"># Initialize processor with configuration</span>
+<span class="n">processor</span> <span class="o">=</span> <span class="n">MeteoDataProcessor</span><span class="p">(</span><span class="s1">&#39;meteo_config.yaml&#39;</span><span class="p">)</span>
+
+<span class="c1"># Process temperature data</span>
+<span class="n">temp_data</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">process_variable</span><span class="p">(</span>
+    <span class="n">variable</span><span class="o">=</span><span class="s1">&#39;t2m&#39;</span><span class="p">,</span>
+    <span class="n">start_date</span><span class="o">=</span><span class="s1">&#39;2025-01-01&#39;</span><span class="p">,</span>
+    <span class="n">end_date</span><span class="o">=</span><span class="s1">&#39;2025-01-31&#39;</span>
+<span class="p">)</span>
+
+<span class="c1"># Save processed data</span>
+<span class="n">processor</span><span class="o">.</span><span class="n">save_data</span><span class="p">(</span><span class="n">temp_data</span><span class="p">,</span> <span class="s1">&#39;processed_temperature.nc&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="example-2-combining-observations-and-model-data">
+<h3><a class="toc-backref" href="#id38" role="doc-backlink">Example 2: Combining Observations and Model Data</a><a class="headerlink" href="#example-2-combining-observations-and-model-data" title="Link to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dafcom.processor</span> <span class="kn">import</span> <span class="n">UnifiedTrainingDataProcessor</span>
+
+<span class="c1"># Initialize the processor</span>
+<span class="n">processor</span> <span class="o">=</span> <span class="n">UnifiedTrainingDataProcessor</span><span class="p">(</span><span class="s1">&#39;training_config.yaml&#39;</span><span class="p">)</span>
+
+<span class="c1"># Get observation data</span>
+<span class="n">obs_data</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">get_observation_data</span><span class="p">(</span>
+    <span class="n">start_date</span><span class="o">=</span><span class="s1">&#39;2025-01-01&#39;</span><span class="p">,</span>
+    <span class="n">end_date</span><span class="o">=</span><span class="s1">&#39;2025-06-01&#39;</span><span class="p">,</span>
+    <span class="n">species</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;PM25&#39;</span><span class="p">]</span>
+<span class="p">)</span>
+
+<span class="c1"># Get model data</span>
+<span class="n">model_data</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">get_model_data</span><span class="p">(</span>
+    <span class="n">start_date</span><span class="o">=</span><span class="s1">&#39;2025-01-01&#39;</span><span class="p">,</span>
+    <span class="n">end_date</span><span class="o">=</span><span class="s1">&#39;2025-06-01&#39;</span><span class="p">,</span>
+    <span class="n">categories</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;meteorology&#39;</span><span class="p">,</span> <span class="s1">&#39;chemistry&#39;</span><span class="p">]</span>
+<span class="p">)</span>
+
+<span class="c1"># Combine data sources</span>
+<span class="n">combined_data</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">interpolate_model_to_obs_locations</span><span class="p">(</span>
+    <span class="n">model_data</span><span class="o">=</span><span class="n">model_data</span><span class="p">,</span>
+    <span class="n">obs_data</span><span class="o">=</span><span class="n">obs_data</span>
+<span class="p">)</span>
+
+<span class="c1"># Perform quality control and feature engineering</span>
+<span class="n">training_data</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">prepare_training_data</span><span class="p">(</span><span class="n">combined_data</span><span class="p">)</span>
+
+<span class="c1"># Split and save training data</span>
+<span class="n">processor</span><span class="o">.</span><span class="n">split_and_save_data</span><span class="p">(</span><span class="n">training_data</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="troubleshooting">
+<h2><a class="toc-backref" href="#id39" role="doc-backlink">Troubleshooting</a><a class="headerlink" href="#troubleshooting" title="Link to this heading">#</a></h2>
+<section id="common-issues">
+<h3><a class="toc-backref" href="#id40" role="doc-backlink">Common Issues</a><a class="headerlink" href="#common-issues" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p><strong>Missing Data Errors</strong>: Check input data availability and quality flags</p></li>
+<li><p><strong>Memory Errors</strong>: Try chunking data or reducing domain size for large datasets</p></li>
+<li><p><strong>Regridding Artifacts</strong>: Verify grid definitions and try alternative methods</p></li>
+<li><p><strong>Coordinate System Mismatches</strong>: Ensure consistent projection definitions</p></li>
+<li><p><strong>Temporal Alignment Issues</strong>: Check for timezone differences or metadata inconsistencies</p></li>
+</ol>
+</section>
+<section id="diagnostic-tools">
+<h3><a class="toc-backref" href="#id41" role="doc-backlink">Diagnostic Tools</a><a class="headerlink" href="#diagnostic-tools" title="Link to this heading">#</a></h3>
+<p>The data processor includes several diagnostic tools:</p>
+<ul class="simple">
+<li><p><strong>Data Validation</strong>: Scripts to check data validity before processing</p></li>
+<li><p><strong>Visualization Tools</strong>: Plot intermediate results to verify processing steps</p></li>
+<li><p><strong>Performance Profiling</strong>: Identify bottlenecks in processing pipelines</p></li>
+<li><p><strong>Log Analysis</strong>: Extract structured information from detailed logs</p></li>
+</ul>
+</section>
+</section>
+<section id="best-practices">
+<h2><a class="toc-backref" href="#id42" role="doc-backlink">Best Practices</a><a class="headerlink" href="#best-practices" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p><strong>Validate Input Data</strong>: Always check data quality before processing</p></li>
+<li><p><strong>Test on Subsets</strong>: Test processing steps on small spatial/temporal subsets first</p></li>
+<li><p><strong>Benchmark Results</strong>: Compare processed data against expected values</p></li>
+<li><p><strong>Document Transformations</strong>: Keep track of all processing steps applied</p></li>
+<li><p><strong>Version Control Configs</strong>: Maintain version control for processing configurations</p></li>
+<li><p><strong>Archive Raw Inputs</strong>: Always keep original data to enable reprocessing</p></li>
+<li><p><strong>Modular Processing</strong>: Break complex workflows into smaller, testable components</p></li>
+<li><p><strong>Consistent Metadata</strong>: Ensure metadata is preserved throughout processing</p></li>
+</ol>
+</section>
+<section id="performance-optimization">
+<h2><a class="toc-backref" href="#id43" role="doc-backlink">Performance Optimization</a><a class="headerlink" href="#performance-optimization" title="Link to this heading">#</a></h2>
+<p>The data processor employs several strategies to optimize performance:</p>
+<ol class="arabic simple">
+<li><p><strong>Parallel Processing</strong>: Distributes work across multiple cores</p></li>
+<li><p><strong>Chunked I/O</strong>: Processes data in manageable chunks to reduce memory usage</p></li>
+<li><p><strong>Lazy Evaluation</strong>: Uses dask for delayed computation when appropriate</p></li>
+<li><p><strong>Cache Management</strong>: Intelligent caching of intermediate results</p></li>
+<li><p><strong>Selective Processing</strong>: Only processes required variables and domains</p></li>
+<li><p><strong>Algorithm Selection</strong>: Uses optimized implementations of costly operations</p></li>
+<li><p><strong>Memory Mapping</strong>: Accesses large datasets without loading them entirely into memory</p></li>
+</ol>
+</section>
+<section id="conclusion">
+<h2><a class="toc-backref" href="#id44" role="doc-backlink">Conclusion</a><a class="headerlink" href="#conclusion" title="Link to this heading">#</a></h2>
+<p>The DAFCOM Data Processor provides a robust foundation for preparing air quality data for both research and operational applications. Its modular design, extensive configuration options, and specialized processing workflows enable efficient handling of diverse data sources to create high-quality inputs for machine learning and forecasting applications.</p>
+<p>For additional details, see the <a class="reference internal" href="api/data_processor.html"><span class="doc">API documentation</span></a> and <a class="reference internal" href="examples.html"><span class="doc">example notebooks</span></a>.</p>
+<p>For complete configuration examples, refer to the following files in the project’s <code class="docutils literal notranslate"><span class="pre">config</span></code> directory:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">data_processor_config.yaml</span></code> - Comprehensive configuration with all available options</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reanalysis_mode_config.yaml</span></code> - Specific configuration for historical data processing</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">forecast_mode_config.yaml</span></code> - Specific configuration for operational forecasting</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="usage.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Usage</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="configuration.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Configuration Guide</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#key-capabilities">Key Capabilities</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#architecture">Architecture</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-processing-workflows">Data Processing Workflows</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reanalysis-mode">Reanalysis Mode</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#forecast-mode">Forecast Mode</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration">Configuration</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-configuration">Example Configuration</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#file-i-o-operations">File I/O Operations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#input-formats">Input Formats</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#output-formats">Output Formats</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#regridding-and-interpolation">Regridding and Interpolation</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#regridding-methods">Regridding Methods</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#vertical-interpolation">Vertical Interpolation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-regridding-workflow">Example Regridding Workflow</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aod-data-processing">AOD Data Processing</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aod-gap-filling">AOD Gap Filling</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aod-quality-control">AOD Quality Control</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#meteorological-data-processing">Meteorological Data Processing</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#key-meteorological-variables">Key Meteorological Variables</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#processing-steps">Processing Steps</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#air-quality-data-processing">Air Quality Data Processing</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data-sources">Data Sources</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Processing Steps</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#feature-engineering">Feature Engineering</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#temporal-features">Temporal Features</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spatial-features">Spatial Features</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mathematical-transformations">Mathematical Transformations</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#api-reference">API Reference</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#unifiedtrainingdataprocessor">UnifiedTrainingDataProcessor</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#UnifiedTrainingDataProcessor"><code class="docutils literal notranslate"><span class="pre">UnifiedTrainingDataProcessor</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#UnifiedTrainingDataProcessor.get_observation_data"><code class="docutils literal notranslate"><span class="pre">UnifiedTrainingDataProcessor.get_observation_data()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#UnifiedTrainingDataProcessor.get_model_data"><code class="docutils literal notranslate"><span class="pre">UnifiedTrainingDataProcessor.get_model_data()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#UnifiedTrainingDataProcessor.interpolate_model_to_obs_locations"><code class="docutils literal notranslate"><span class="pre">UnifiedTrainingDataProcessor.interpolate_model_to_obs_locations()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#regriddingprocessor">RegriddingProcessor</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#paralleldataloader">ParallelDataLoader</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#observationdataloader">ObservationDataLoader</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#command-line-interface">Command Line Interface</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-1-processing-meteorological-data">Example 1: Processing Meteorological Data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-2-combining-observations-and-model-data">Example 2: Combining Observations and Model Data</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#common-issues">Common Issues</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#diagnostic-tools">Diagnostic Tools</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#best-practices">Best Practices</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#performance-optimization">Performance Optimization</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusion">Conclusion</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/your-username/DAFCOM/edit/main/docs/data_processor.rst">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="_sources/data_processor.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, NWS OAR.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+    <div class="footer-items__center">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

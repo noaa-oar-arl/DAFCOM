@@ -1,0 +1,30 @@
+# Data Processor Architecture
+
+This is a placeholder for the data processor architecture diagram.
+
+The DAFCOM Data Processor architecture includes:
+
+1. Input Data Sources:
+   - Meteorological Data
+   - Satellite AOD Data
+   - Air Quality Observations
+   - Emissions Data
+   - Land Use/Land Cover Data
+
+2. Processing Components:
+   - File I/O (NetCDF, CSV, HDF5 handlers)
+   - Spatial Processing (regridding, interpolation)
+   - Temporal Processing (alignment, resampling)
+   - Quality Control
+   - Data Fusion
+   - Feature Engineering
+
+3. Output Data Products:
+   - ML Training Datasets
+   - Validation Datasets
+   - Forecast Model Inputs
+   - Visualization Data
+
+4. Processing Modes:
+   - Reanalysis Mode (for historical data)
+   - Forecast Mode (for operational predictions)

@@ -1,0 +1,94 @@
+digraph G {
+    bgcolor="transparent";
+    rankdir=TB;
+    node [shape=box, style="filled,rounded", fillcolor="#f5f5f5", fontname="Arial", margin="0.3,0.1"];
+    edge [arrowhead=vee, arrowsize=0.8];
+
+    // Input data sources
+    subgraph cluster_input {
+        label="Input Data Sources";
+        style=filled;
+        fillcolor="#e6f3ff";
+
+        meteo [label="Meteorological\nData"];
+        aod [label="Satellite AOD\nData"];
+        air_quality [label="Air Quality\nObservations"];
+        emissions [label="Emissions\nData"];
+        land_use [label="Land Use/\nLand Cover"];
+    }
+
+    // Data Processor Components
+    subgraph cluster_processor {
+        label="DAFCOM Data Processor";
+        style=filled;
+        fillcolor="#fff7e6";
+
+        // File I/O Layer
+        subgraph cluster_io {
+            label="File I/O";
+            style=filled;
+            fillcolor="#f0f0f0";
+            io_netcdf [label="NetCDF\nHandler"];
+            io_csv [label="CSV\nHandler"];
+            io_hdf5 [label="HDF5\nHandler"];
+        }
+
+        // Processing Components
+        subgraph cluster_components {
+            label="Processing Components";
+            style=filled;
+            fillcolor="#f0f0f0";
+
+            spatial [label="Spatial\nProcessing"];
+            temporal [label="Temporal\nProcessing"];
+            qc [label="Quality\nControl"];
+            fusion [label="Data\nFusion"];
+            feat_eng [label="Feature\nEngineering"];
+        }
+    }
+
+    // Output data
+    subgraph cluster_output {
+        label="Output Data Products";
+        style=filled;
+        fillcolor="#e6ffe6";
+
+        training_data [label="ML Training\nDatasets"];
+        validation_data [label="Validation\nDatasets"];
+        forecast_input [label="Forecast Model\nInputs"];
+        visualization [label="Visualization\nData"];
+    }
+
+    // Workflows
+    reanalysis [label="Reanalysis Mode", shape=ellipse, fillcolor="#ffeded"];
+    forecast [label="Forecast Mode", shape=ellipse, fillcolor="#ededff"];
+
+    // Connect inputs to I/O layer
+    meteo -> io_netcdf;
+    aod -> io_netcdf;
+    air_quality -> io_csv;
+    emissions -> io_hdf5;
+    land_use -> io_hdf5;
+
+    // Connect I/O to processing
+    io_netcdf -> spatial;
+    io_csv -> qc;
+    io_hdf5 -> spatial;
+
+    // Connect processing components
+    spatial -> temporal;
+    spatial -> fusion;
+    qc -> fusion;
+    temporal -> feat_eng;
+    fusion -> feat_eng;
+
+    // Connect to outputs
+    feat_eng -> training_data;
+    feat_eng -> validation_data;
+    feat_eng -> forecast_input;
+    feat_eng -> visualization;
+
+    // Workflows
+    reanalysis -> {io_netcdf io_csv io_hdf5} [style=dashed];
+    forecast -> {io_netcdf io_csv} [style=dashed];
+}
