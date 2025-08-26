@@ -2,104 +2,104 @@
 author: Beiming Tang
 date: 04/29/2025
 '''
+import time
+start_time = time.time()
+
 import numpy as np
 from netCDF4 import Dataset
 import xarray as xr
 import datetime
 from datetime import datetime as dt
 import pandas as pd
+'''
+0) initialize
+'''
+dir_source = '/Users/beiming_tang/Downloads/gs_data/'
+pattern = 'AirNow_20250301_20250401.nc'
+ur_lat = 49
+ur_lon = -65
+ll_lat = 25
+ll_lon = -125
+dir_output = '/Users/beiming_tang/Desktop/DAFCOM/src/forecast_mode/step2_obs_prepare/'
 
 '''
 1) load data from AirNow
 '''
-dir_airnow = '/data/aqf3/beiming.tang/DATA/gs_data/AirNow/2025/'
-pattern = 'AirNow_20250401_20250501.nc'
-filename = dir_airnow+pattern
+filename = dir_source+pattern
 f1 = xr.open_dataset(filename)
-lat = f1['latitude']       # 2089
-lon = f1['longitude']      # 2089
-time_ori = f1['time']      # 2231
-pm25 = f1['PM2.5'][:,0,:]  #(2231,2089)
+lat = f1['latitude']       # 2273
+lon = f1['longitude']      # 2273
+time_ori = f1['time']      # 2017
+pm25 = f1['PM2.5'][:,0,:]  #(2017,2273)
 #o3 = f1['OZONE'][:,0,:]  
 #no2 = f1['NO2'][:,0,:]  
 #no = f1['NO'][:,0,:]  
 #nox = f1['NOX'][:,0,:]  
 
-print(np.shape(pm25))
+print('step1',np.shape(pm25))
 
 '''
-2) find vacant site
+2) Process data more efficiently using vectorized operations
 '''
-site_vacant_list = []
-pm25_sum_by_site = pm25.sum(dim='time')
-for i in range(len(pm25_sum_by_site)):
-    if float(pm25_sum_by_site[i]) == -len(time_ori):
-        site_vacant_list.append(i)
+# Convert to pandas DataFrame for more efficient processing
+pm25_avr_hr = pm25.resample(time='h').mean()
+time_avr_hr = pd.to_datetime(time_ori.resample(time='h').mean().values)
 
-'''
-3) average by hour
-'''
-pm25_avr_hr = pm25.resample(time = 'h').mean()     #(745,2231)
-time_avr_hr = time_ori.resample(time= 'h').mean()  #2231
+print("Hourly averaged PM2.5 shape:", np.shape(pm25_avr_hr))
 
-print(np.shape(pm25_avr_hr))
+# Create masks for filtering
+vacant_sites_mask = (pm25.sum(dim='time') != -len(time_ori))
+lat_mask = (lat >= ll_lat) & (lat <= ur_lat)
+lon_mask = (lon >= ll_lon) & (lon <= ur_lon)
+valid_sites_mask = vacant_sites_mask & lat_mask & lon_mask
 
-'''
-4) get useful data
-'''
-pm25_new_list = []
-time_new_list = []
-lat_new_list = []
-lon_new_list = []
-index_new_list = []
-for i in range(len(lat)): #number of sites ==2231
-    if i not in site_vacant_list:
-        if float(lat[i]) >= 25 and float(lat[i]) <= 49:
-            if float(lon[i]) >= -125 and float(lon[i]) <= -65:
-                for j in range(len(time_avr_hr)):  #time == 745
-                #for j in range(30):
-                    #print(i,j)
-                    if float(pm25_avr_hr[j][i]) != -1:
-                        pm25_new_list.append(np.round(float(pm25_avr_hr[j][i]),4))
+# Get indices of valid sites
+valid_site_indices = np.where(valid_sites_mask)[0]
 
-                        time_here = time_avr_hr[j].values
-                        time_formal = pd.to_datetime(time_here)
-                        #time_new_list.append(time_formal.to_pydatetime())
-                        time_new_list.append(str(time_formal))
-                       
-                        lat_new_list.append(float(lat[i]))
-                        lon_new_list.append(float(lon[i]))
-                        index_new_list.append(i)
+# Initialize lists with pre-calculated size for better memory efficiency
+total_times = len(time_avr_hr)
+valid_data = []
 
+# Process data for valid sites
+for site_idx in valid_site_indices:
+    site_data = pm25_avr_hr[:, site_idx]
+    valid_times_mask = site_data != -1
+    
+    if np.any(valid_times_mask):
+        valid_times = time_avr_hr[valid_times_mask]
+        valid_pm25 = np.round(site_data[valid_times_mask].values, 4)
+        
+        # Create data for this site
+        site_data_dict = {
+            'site_index': np.full_like(valid_pm25, site_idx),
+            'time_utc': [str(t) for t in valid_times],
+            'lat': np.full_like(valid_pm25, float(lat[site_idx])),
+            'lon': np.full_like(valid_pm25, float(lon[site_idx])),
+            'pm25': valid_pm25
+        }
+        valid_data.append(pd.DataFrame(site_data_dict))
 
-'''
-5) output
-'''
-LOC_NUMBER_OBS_FINAL = index_new_list
-TIME_OBS_FINAL = time_new_list
-PM_OBS_FINAL = pm25_new_list
-LAT_OBS_FINAL = lat_new_list
-LON_OBS_FINAL = lon_new_list
+# Combine all data
+final_df = pd.concat(valid_data, ignore_index=True)
+
+# Convert to final format
+LOC_NUMBER_OBS_FINAL = final_df['site_index'].tolist()
+TIME_OBS_FINAL = final_df['time_utc'].tolist()
+PM_OBS_FINAL = final_df['pm25'].tolist()
+LAT_OBS_FINAL = final_df['lat'].tolist()
+LON_OBS_FINAL = final_df['lon'].tolist()
 
 
 '''
-6) write into xlsx excel
+3) Write directly to Excel using pandas
 '''
-import xlsxwriter
-my_list = [LOC_NUMBER_OBS_FINAL,TIME_OBS_FINAL,LAT_OBS_FINAL,LON_OBS_FINAL,PM_OBS_FINAL]
-workbook = xlsxwriter.Workbook(pattern.replace('AirNow_','getobs_PM25_').replace('.nc','.xlsx'))
-worksheet = workbook.add_worksheet()
-worksheet.write(0,0,'site_index')
-worksheet.write(0,1,'time_utc')
-worksheet.write(0,2,'lat')
-worksheet.write(0,3,'lon')
-worksheet.write(0,4,'airnow_pm25')
-for row_num, row_data in enumerate(my_list):
-    for col_num, data in enumerate(row_data):
-        worksheet.write(col_num+1, row_num, data)
-workbook.close()
-
-
+# Save to Excel directly using pandas - more efficient than xlsxwriter for this case
+output_filename = dir_output + pattern.replace('AirNow_', 'getobs_PM25_').replace('.nc', '.xlsx')
+final_df.to_excel(output_filename, index=False, 
+                 columns=['site_index', 'time_utc', 'lat', 'lon', 'pm25'],
+                 header=['site_index', 'time_utc', 'lat', 'lon', 'airnow_pm25'])
+print(f'Excel file saved to: {output_filename}')
+print(f'Total processing time: {time.time() - start_time:.2f} seconds')
 
 
 
