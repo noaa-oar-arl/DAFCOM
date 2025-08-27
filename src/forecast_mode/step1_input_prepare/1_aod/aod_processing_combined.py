@@ -9,7 +9,7 @@ import xarray as xr
 import xesmf as xe
 import sys
 
-def extract_bev_data(year_list, month_list, day_list):
+def extract_bev_data(year_list, month_list, day_list, size_lat_ufs, size_lon_ufs):
     """Step 1: Extract BEV data from UFS-AQM output"""
     output_files = []
     
@@ -34,8 +34,8 @@ def extract_bev_data(year_list, month_list, day_list):
 
                     # Create dimensions
                     ft.createDimension('time', None)
-                    ft.createDimension('lat', 488)
-                    ft.createDimension('lon', 775)
+                    ft.createDimension('lat', size_lat_ufs)
+                    ft.createDimension('lon', size_lon_ufs)
 
                     # Create variables
                     lat = ft.createVariable('lat', 'f4', ('lat', 'lon'))
@@ -61,14 +61,14 @@ def extract_bev_data(year_list, month_list, day_list):
     
     return output_files
 
-def create_surface_map(input_files, variable_name='aod'):
+def create_surface_map(input_files, variable_name, size_lat_ufs, size_lon_ufs):
     """Step 2: Create surface map from BEV files"""
     output_filename = f'Surface_Map_{variable_name}.nc'
     
     ft = Dataset(output_filename, 'w', format='NETCDF4')
     time = ft.createDimension('time', len(input_files))
-    lat = ft.createDimension('lat', 488)
-    lon = ft.createDimension('lon', 775)
+    lat = ft.createDimension('lat', size_lat_ufs)
+    lon = ft.createDimension('lon', size_lon_ufs)
 
     time_new = ft.createVariable('time', 'S1', ('time',))
     time_new.units = ''
@@ -104,7 +104,7 @@ def create_surface_map(input_files, variable_name='aod'):
     ft.close()
     return output_filename
 
-def regrid_to_0p01(input_filename, variable_name='aod'):
+def regrid_to_0p01(input_filename, variable_name, ur_lat,ll_lat, ur_lon, ll_lon):
     """Step 3: Regrid data to 0.01 degree resolution"""
     # Read input data
     ds = xr.open_dataset(input_filename)
@@ -113,24 +113,27 @@ def regrid_to_0p01(input_filename, variable_name='aod'):
     # Define output grid
     ds_out = xr.Dataset(
         {
-            "lat": (["lat"], np.arange(49, 25, -0.01), {"units": "degrees_north"}),
-            "lon": (["lon"], np.arange(-125, -65, 0.01), {"units": "degrees_east"}),
+            "lat": (["lat"], np.arange(ur_lat, ll_lat, -0.01), {"units": "degrees_north"}),
+            "lon": (["lon"], np.arange(ll_lon, ur_lon, 0.01), {"units": "degrees_east"}),
         }
     )
 
     # Perform regridding
     regridder = xe.Regridder(ds, ds_out, 'bilinear')
     dr_out = regridder(dr, keep_attrs=True)
+    
+    size_lat_regrid = np.abs((ur_lat - ll_lat) / 0.01)
+    size_lon_regrid = np.abs((ur_lon - ll_lon) / 0.01)
 
-    lat_w = [49 - 0.01 * x for x in range(2400)]
-    lon_w = [-125 + 0.01 * x for x in range(6000)]
+    lat_w = [ur_lat - 0.01 * x for x in range(size_lat_regrid)]
+    lon_w = [ll_lon + 0.01 * x for x in range(size_lon_regrid)]
 
     # Write regridded data to netCDF file
     output_filename = f'{variable_name}_0p01.nc'
     ft = Dataset(output_filename, 'w', format='NETCDF4')
     
-    lat = ft.createDimension('latitude', 2400)
-    lon = ft.createDimension('longitude', 6000)
+    lat = ft.createDimension('latitude', size_lat_regrid)
+    lon = ft.createDimension('longitude', size_lon_regrid)
     time = ft.createDimension('time', len(dr_out))
 
     lat_new = ft.createVariable('lat', 'f4', ('latitude'))
@@ -158,18 +161,24 @@ def main():
     month_list = ['04']
     day_list = ['29', '30']  # Adjust as needed
     variable_name = 'aod'
+    size_lat_ufs = 488  # UFS-AQM latitude size
+    size_lon_ufs = 775  # UFS-AQM longitude size
+    ur_lat = 49.0      # Upper right latitude for regridding
+    ll_lat = 25.0      # Lower left latitude for regridding
+    ur_lon = -65.0     # Upper right longitude for regridding
+    ll_lon = -125.0    # Lower left longitude for regridding
     
     # Step 1: Extract BEV data
     print("Step 1: Extracting BEV data...")
-    bev_files = extract_bev_data(year_list, month_list, day_list)
+    bev_files = extract_bev_data(year_list, month_list, day_list, size_lat_ufs, size_lon_ufs)
     
     # Step 2: Create surface map
     print("Step 2: Creating surface map...")
-    surface_map_file = create_surface_map(bev_files, variable_name)
+    surface_map_file = create_surface_map(bev_files, variable_name, size_lat_ufs, size_lon_ufs)
     
     # Step 3: Regrid to 0.01 degree resolution
     print("Step 3: Regridding to 0.01 degree resolution...")
-    final_output = regrid_to_0p01(surface_map_file, variable_name)
+    final_output = regrid_to_0p01(surface_map_file, variable_name, ur_lat, ll_lat, ur_lon, ll_lon)
     
     print(f"Processing complete. Final output saved to: {final_output}")
 
