@@ -1,0 +1,112 @@
+# Project Information
+project:
+  name: DAFCOM
+  version: 1.0
+  author: Dr. Beiming Tang & Dr. Barry Baker
+
+# Logging Configuration
+logging:
+  level: INFO  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  file: logs/app.log
+
+# Database Sources and Connection Settings
+database:
+  dynamic_inputs:  # Updated hourly or daily
+    meteorology: ufs_aqm_folder
+    aod: ufs_aqm_folder
+    ndvi: ndvi_process_folder
+    surface_pollutants: ufs_aqm_folder
+    tempo_info: calculated_by_ground_station
+
+  static_inputs:
+    elevation: elevation_folder_20yr
+    population: population_by_year
+    anthropogenic_emission: GMU_nemo_emissions
+    spatial_info: calculated_by_ground_station
+
+# Machine Learning Model Parameters
+model:
+  layers_count: 2
+  layer1:
+    type: LSTM
+    hidden_layers_count: 4
+    hidden_layers_types: [LSTM, LSTM, DENSE, DENSE]
+    hidden_layers_units: [84, 84, 28, 24]
+    lstm_return_sequence: [true, false]
+    dropout: 0.2
+    batch_size: 32
+    epochs: 50
+  layer2:
+    type: XGBoost
+    tuning:
+      enabled: true  # If true, perform hyperparameter tuning; if false, use default settings
+      parameters:
+        max_depth: [3, 5, 7, 9]
+        min_child_weight: [1, 5, 10]
+        gamma: [0.2, 1, 3, 5]
+        subsample: [0.5, 1]
+        colsample_bytree: [0.5, 0.8, 1]
+        learning_rate: [0.01, 0.15, 0.2]
+        n_estimators: [100, 400, 600, 800]
+    default:  # Used when tuning.enabled is false
+      max_depth: 3
+      min_child_weight: 5
+      gamma: 0.2
+      subsample: 0.5
+      colsample_bytree: 0.8
+      learning_rate: 0.2
+      n_estimators: 100
+
+# Features Used
+features:
+  meteorology:
+    - temperature_2m
+    - dew_point_temperature_2m
+    - wind_speed_u_10m
+    - wind_speed_v_10m
+    - evaporation
+    - precipitation
+    - surface_pressure
+    - pblh
+    - short_wave_radiation
+  aod:
+    - aod_550nm
+  ndvi:
+    - ndvi
+  elevation:
+    - elevation
+  population:
+    - population
+  original_model_surface_pollutants:
+    - pm2_5
+    - o3
+    - no2
+  anthropogenic_emissions:
+    - bc
+    - nh3
+    - nox
+    - voc
+    - pm2_5
+    - so2
+  spatial_info:
+    - latitude
+    - longitude
+  temporal_info:
+    - year
+    - month
+    - date
+    - julian_day
+    - hour_of_day_local
+
+# Input Format
+input:
+  observation:
+    type: csv
+  model:
+    type: netcdf
+
+# Output Format
+output:
+  format: netcdf
+  location: output_folder
+  save_intermediate_files: false  # If true, saves interpolated files in CSV
