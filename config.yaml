@@ -24,8 +24,36 @@ database:
     anthropogenic_emission: GMU_nemo_emissions
     spatial_info: calculated_by_ground_station
 
+# Input Sources Format:
+format:
+  observation: 
+    airnow: csv
+
+  model:
+    dynamic_inputs:
+      meteorology: netcdf
+      aod: netcdf
+      ndvi: netcdf
+      surface_pollutants: netcdf
+      tempo_info:  #calculated
+
+    static_inputs:
+      elevation: netcdf
+      population: netcdf
+      anthropogenic_emission: netcdf
+      spatial_info: #calculated
+
+# Domain and Resolution Settings
+domain:
+  upper_right_latitude: 49
+  upper_right_longitude: -125
+  lower_left_latitude: 25
+  lower_left_longitude: -65
+
+resolution: 0.01
+
 # Machine Learning Model Parameters
-model:
+machine_learning_model:
   layers_count: 2
   layer1:
     type: LSTM
@@ -97,13 +125,6 @@ features:
     - date
     - julian_day
     - hour_of_day_local
-
-# Input Format
-input:
-  observation:
-    type: csv
-  model:
-    type: netcdf
 
 # Output Format
 output:
