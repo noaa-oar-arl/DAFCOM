@@ -12,10 +12,10 @@ logging:
 # Database Sources and Connection Settings
 database:
   dynamic_inputs:  # Updated hourly or daily
-    meteorology: ufs_aqm_folder
-    aod: ufs_aqm_folder
+    meteorology: /Users/beiming_tang/Desktop/DATA/NAQFC-PROD/   #aqm.t12z.phy*.nc
+    aod: /Users/beiming_tang/Desktop/DATA/NAQFC-PROD/           #aqm.t12z.phy*.nc
     ndvi: ndvi_process_folder
-    surface_pollutants: ufs_aqm_folder
+    surface_pollutants: /Users/beiming_tang/Desktop/DATA/NAQFC-PROD/     #aqm.t12z.chem_sfc.nc
     tempo_info: calculated_by_ground_station
 
   static_inputs:
@@ -43,14 +43,40 @@ format:
       anthropogenic_emission: netcdf
       spatial_info: #calculated
 
+# Input Sources size:
+Original_Size:
+  # observation: 
+    # airnow: 
+
+  model:
+    dynamic_inputs:
+      meteorology: [488,775]
+      aod: [488,775]
+      # ndvi: netcdf
+      surface_pollutants: [488,775]
+      # tempo_info:  #calculated
+
+    # static_inputs:
+      # elevation: netcdf
+      # population: netcdf
+      # anthropogenic_emission: netcdf
+      # spatial_info: #calculated
+
+# TIME
+Time:
+  year_list: ['2025']
+  month_list: ['08']
+  day_list: ['01']
+  
 # Domain and Resolution Settings
 domain:
   upper_right_latitude: 49
-  upper_right_longitude: -125
+  upper_right_longitude: -65
   lower_left_latitude: 25
-  lower_left_longitude: -65
+  lower_left_longitude: -125
 
 resolution: 0.01
+interpolation_method: 'bilinear'
 
 # Machine Learning Model Parameters
 machine_learning_model:

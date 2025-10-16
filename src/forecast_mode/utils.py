@@ -8,29 +8,64 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
-import xlsxwriter
+# import xlsxwriter
 from math import radians, sin, cos, asin, sqrt
 
 #=============
 # def class and functions
 #==============
+import xarray as xr
+import xesmf as xe
+
+def Regrid(ds, variable_name, ur_lat, ll_lat, ur_lon, ll_lon, resolution, interpolation_method):
+    #resolution type == float
+    #interpolation_method type = str
+    
+    # Define output grid
+    ds_out = xr.Dataset(
+        {
+            "lat": (["lat"], np.arange(ur_lat, ll_lat, -resolution)),
+            "lon": (["lon"], np.arange(ll_lon, ur_lon, resolution))
+        }
+    )
+
+    # Perform regridding
+    regridder = xe.Regridder(ds, ds_out, interpolation_method)  #default interpolation_method = 'bilinear'
+    dr_out = regridder(ds[variable_name])
+
+    # Create final dataset with regridded data
+    final_ds = xr.Dataset(
+        {
+            variable_name: (['time', 'latitude', 'longitude'], dr_out.values),
+            'lat': ('latitude', np.arange(ur_lat, ll_lat, -resolution)),
+            'lon': ('longitude', np.arange(ll_lon, ur_lon, resolution))
+        },
+        coords={
+            'time': ds.time
+        }
+    )
+    
+    return final_ds
 
 
-class regridder
-    def regridder(self, config):
-        target_file = os.path.expandvars(config['analysis']['target_grid'])
-        ds_target = xr.open_dataset(target_file)
 
-        regridder_dict = dict()
 
-        for name in config[config_group]:
-            base_file = os.path.expandvars(config[config_group][name]['regrid']['base_grid'])
-            ds_base = xr.open_dataset(base_file)
-            method = config[config_group][name]['regrid']['method']
-            regridder = xe.Regridder(ds_base, ds_target, method)
-            regridder_dict[name] = regridder
+#this is from MELODIES-MONET
+# class regridder:
+#     def regridder(self, config):
+#         target_file = os.path.expandvars(config['analysis']['target_grid'])
+#         ds_target = xr.open_dataset(target_file)
 
-        return regridder_dict
+#         regridder_dict = dict()
+
+#         for name in config[config_group]:
+#             base_file = os.path.expandvars(config[config_group][name]['regrid']['base_grid'])
+#             ds_base = xr.open_dataset(base_file)
+#             method = config[config_group][name]['regrid']['method']
+#             regridder = xe.Regridder(ds_base, ds_target, method)
+#             regridder_dict[name] = regridder
+
+#         return regridder_dict
 
 
 class Interpolator:
