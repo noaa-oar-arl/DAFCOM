@@ -50,10 +50,8 @@ Original_Size:
 
   model:
     dynamic_inputs:
-      meteorology: [488,775]
-      aod: [488,775]
+      ufs: [488,775]
       # ndvi: netcdf
-      surface_pollutants: [488,775]
       # tempo_info:  #calculated
 
     # static_inputs:
@@ -75,7 +73,7 @@ domain:
   lower_left_latitude: 25
   lower_left_longitude: -125
 
-resolution: 0.01
+resolution: 0.05
 interpolation_method: 'bilinear'
 
 # Machine Learning Model Parameters
