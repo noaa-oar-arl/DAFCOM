@@ -19,10 +19,14 @@ database:
     tempo_info: calculated_by_ground_station
 
   static_inputs:
-    elevation: elevation_folder_20yr
-    population: population_by_year
+    elevation: /Users/beiming_tang/Desktop/DATA/Static_Data/elevation_final_regrid_0p01.nc
+    population: /Users/beiming_tang/Desktop/DATA/Static_Data/Population_0p01_regrid_data.nc
+    land_use_cover: /Users/beiming_tang/Desktop/DATA/Static_Data/LUC_0p01_regrid_data.nc  
     anthropogenic_emission: GMU_nemo_emissions
     spatial_info: calculated_by_ground_station
+  
+  observations:
+    airnow: /Users/beiming_tang/Desktop/DATA/OBS_Data/ #getobs_PM25_20250401_20250501.xlsx
 
 # Input Sources Format:
 format:
