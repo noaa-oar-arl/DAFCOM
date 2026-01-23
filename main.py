@@ -102,9 +102,16 @@ print(f"Step 3 done, elapsed: {time.time() - start:.2f}s")
 """
 time_length = final_chem_pm25.dims["time"]
 
-final_static_elevation = Load_Static_Data.extract_elevation(static_elevation_data, "Elevation", time_length)
-final_static_population = Load_Static_Data.extract_population(static_population_data, "Population", time_length)
-final_static_land_use_cover = Load_Static_Data.extract_land_use_cover(static_land_use_cover_data, "luc", time_length)
+# 🍃⚡ Aero Protocol: Static data extraction now supports optional chunking.
+final_static_elevation = Load_Static_Data.extract_elevation(
+    static_elevation_data, "Elevation", time_length, chunks={"lat": 100, "lon": 100}
+)
+final_static_population = Load_Static_Data.extract_population(
+    static_population_data, "Population", time_length, chunks={"lat": 100, "lon": 100}
+)
+final_static_land_use_cover = Load_Static_Data.extract_land_use_cover(
+    static_land_use_cover_data, "luc", time_length, chunks={"lat": 100, "lon": 100}
+)
 print("finish part 4")
 print(f"Step 4 done, elapsed: {time.time() - start:.2f}s")
 
@@ -113,10 +120,12 @@ print(f"Step 4 done, elapsed: {time.time() - start:.2f}s")
 5) load observation from AirNow
 """
 obs_airnow_folder = config["database"]["observations"]["airnow"]
+# 🍃⚡ Aero Protocol: Observations are now returned as a lazy-friendly xarray Dataset.
+# We use chunks={'site': 100} to enable parallel processing while maintaining a 2D structure.
 final_obs_pm25 = Load_Observation.extract_airnow_pm25(
-    obs_airnow_folder, "AirNow_20230801_20230831.nc", ll_lat, ur_lat, ll_lon, ur_lon
+    obs_airnow_folder, "AirNow_20230801_20230831.nc", ll_lat, ur_lat, ll_lon, ur_lon, chunks={"site": 100}
 )
 
 
-print("finish part 5")
+print(f"finish part 5. Loaded {final_obs_pm25.pm25.count().values} valid observations.")
 print(f"Step 5 done, elapsed: {time.time() - start:.2f}s")

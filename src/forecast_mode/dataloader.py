@@ -6,7 +6,7 @@ Aero-compliant Data Loading Module.
 import fnmatch
 import os
 from datetime import datetime
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 import pandas as pd
 import xarray as xr
@@ -276,11 +276,29 @@ class Load_Static_Data:
     """Loader for Static data (Elevation, Population, Land Use)."""
 
     @staticmethod
-    def extract_elevation(static_elevation_data: str, variable_name: str, time_length: int) -> List[xr.DataArray]:
-        """
-        Extract elevation data.
+    def _extract_static(filepath: str, variable_name: str, time_length: int, chunks: Optional[dict] = None) -> xr.DataArray:
+        """Generic helper for static data extraction."""
+        ds = xr.open_dataset(filepath, chunks=chunks or {})
+        data = ds[variable_name]
 
-        Returns a list of DataArrays to maintain API compatibility while preserving laziness.
+        # Squeeze time if it exists
+        if "time" in data.dims:
+            data = data.isel(time=0, drop=True)
+
+        # Expand along a new time dimension lazily using broadcasting
+        # 🍃⚡ Aero Protocol: Vectorized expansion instead of Python lists.
+        # We create a dummy time coordinate if none exists to facilitate broadcasting.
+        dummy_time = pd.date_range("2000-01-01", periods=time_length, freq="h")
+        data_expanded = data.expand_dims(time=dummy_time)
+
+        return data_expanded
+
+    @staticmethod
+    def extract_elevation(
+        static_elevation_data: str, variable_name: str, time_length: int, chunks: Optional[dict] = None
+    ) -> xr.DataArray:
+        """
+        Extract elevation data and expand along time dimension.
 
         Parameters
         ----------
@@ -290,29 +308,65 @@ class Load_Static_Data:
             Name of the variable to extract.
         time_length : int
             Number of time steps to replicate the static data for.
+        chunks : dict, optional
+            Dask chunk sizes for lazy loading.
 
         Returns
         -------
-        List[xr.DataArray]
-            List of static data arrays.
+        xr.DataArray
+            Static data expanded along the time dimension.
         """
-        ds = xr.open_dataset(static_elevation_data, chunks={})
-        data = ds[variable_name].isel(time=0) if "time" in ds.dims else ds[variable_name]
-        return [data] * time_length
+        return Load_Static_Data._extract_static(static_elevation_data, variable_name, time_length, chunks=chunks)
 
     @staticmethod
-    def extract_population(static_population_data: str, variable_name: str, time_length: int) -> List[xr.DataArray]:
-        """Extract population data."""
-        ds = xr.open_dataset(static_population_data, chunks={})
-        data = ds[variable_name].isel(time=0) if "time" in ds.dims else ds[variable_name]
-        return [data] * time_length
+    def extract_population(
+        static_population_data: str, variable_name: str, time_length: int, chunks: Optional[dict] = None
+    ) -> xr.DataArray:
+        """
+        Extract population data and expand along time dimension.
+
+        Parameters
+        ----------
+        static_population_data : str
+            Path to the NetCDF file.
+        variable_name : str
+            Name of the variable to extract.
+        time_length : int
+            Number of time steps to replicate the static data for.
+        chunks : dict, optional
+            Dask chunk sizes for lazy loading.
+
+        Returns
+        -------
+        xr.DataArray
+            Static data expanded along the time dimension.
+        """
+        return Load_Static_Data._extract_static(static_population_data, variable_name, time_length, chunks=chunks)
 
     @staticmethod
-    def extract_land_use_cover(static_land_use_cover_data: str, variable_name: str, time_length: int) -> List[xr.DataArray]:
-        """Extract land use cover data."""
-        ds = xr.open_dataset(static_land_use_cover_data, chunks={})
-        data = ds[variable_name].isel(time=0) if "time" in ds.dims else ds[variable_name]
-        return [data] * time_length
+    def extract_land_use_cover(
+        static_land_use_cover_data: str, variable_name: str, time_length: int, chunks: Optional[dict] = None
+    ) -> xr.DataArray:
+        """
+        Extract land use cover data and expand along time dimension.
+
+        Parameters
+        ----------
+        static_land_use_cover_data : str
+            Path to the NetCDF file.
+        variable_name : str
+            Name of the variable to extract.
+        time_length : int
+            Number of time steps to replicate the static data for.
+        chunks : dict, optional
+            Dask chunk sizes for lazy loading.
+
+        Returns
+        -------
+        xr.DataArray
+            Static data expanded along the time dimension.
+        """
+        return Load_Static_Data._extract_static(static_land_use_cover_data, variable_name, time_length, chunks=chunks)
 
 
 class Load_Observation:
@@ -320,59 +374,68 @@ class Load_Observation:
 
     @staticmethod
     def extract_airnow_pm25(
-        obs_folder: str, obs_filename: str, ll_lat: float, ur_lat: float, ll_lon: float, ur_lon: float
-    ) -> Tuple[List[int], List[str], List[float], List[float], List[float]]:
+        obs_folder: str,
+        obs_filename: str,
+        ll_lat: float,
+        ur_lat: float,
+        ll_lon: float,
+        ur_lon: float,
+        chunks: Optional[dict] = None,
+    ) -> xr.Dataset:
         """
-        Extract AirNow PM2.5 data and return as lists.
-        🍃⚡ Refactored for efficiency using xarray vectorization.
+        Extract AirNow PM2.5 data and return as a tabular xarray Dataset.
+
+        🍃⚡ Aero Protocol: Backend-agnostic, supports Dask, and avoids explicit loops.
+
+        Parameters
+        ----------
+        obs_folder : str
+            Folder containing observation files.
+        obs_filename : str
+            Filename of the NetCDF observation file.
+        ll_lat, ur_lat : float
+            Latitude bounds.
+        ll_lon, ur_lon : float
+            Longitude bounds.
+        chunks : dict, optional
+            Dask chunk sizes for lazy loading.
+
+        Returns
+        -------
+        xr.Dataset
+            A tabular dataset of valid PM2.5 observations with coordinates.
         """
         filename = os.path.join(obs_folder, obs_filename)
-        ds = xr.open_dataset(filename)
+        ds = xr.open_dataset(filename, chunks=chunks)
 
         # Basic cleanup
         pm25 = ds["PM2.5"]
         if "dim_1" in pm25.dims:  # Handle the [:, 0, :] from original code
             pm25 = pm25.isel(dim_1=0)
 
-        # Hourly resampling
+        # Hourly resampling - resample is lazy if data is dask-backed
         pm25_hr = pm25.resample(time="1h").mean()
 
         # Spatial filtering
-        mask = (ds.latitude >= ll_lat) & (ds.latitude <= ur_lat) & (ds.longitude >= ll_lon) & (ds.longitude <= ur_lon)
+        spatial_mask = (ds.latitude >= ll_lat) & (ds.latitude <= ur_lat) & (ds.longitude >= ll_lon) & (ds.longitude <= ur_lon)
 
         # Identify non-vacant sites (original logic was sum != -len(time))
         # Assuming -1 is the fill value from original code
-        valid_sites = (pm25 != -1).any(dim="time") & mask
+        valid_sites = (pm25 != -1).any(dim="time") & spatial_mask
 
-        ds_valid = ds.sel(site=valid_sites)
-        pm25_valid_hr = pm25_hr.sel(site=valid_sites)
+        ds_subset = ds.sel(site=valid_sites)
+        pm25_subset_hr = pm25_hr.sel(site=valid_sites)
 
-        # Convert to the expected list format (API compatibility)
-        index_new_list = []
-        time_new_list = []
-        pm25_new_list = []
-        lat_new_list = []
-        lon_new_list = []
+        # 🍃⚡ Aero Protocol: Avoid drop=True and forced stacking to maintain laziness.
+        # The user can flatten the data (stack + dropna) when they are ready to compute.
+        ds_final = pm25_subset_hr.where(pm25_subset_hr != -1).to_dataset(name="pm25")
 
-        # We still need a loop to flatten to the specific format requested,
-        # but it's now only over valid data.
-        # This is still a "Lazy Breaker" due to the return type, but significantly faster.
-        for i in range(len(ds_valid.site)):
-            site_data = pm25_valid_hr.isel(site=i)
-            site_lat = float(ds_valid.latitude.isel(site=i))
-            site_lon = float(ds_valid.longitude.isel(site=i))
-            site_idx = int(ds_valid.site.isel(site=i))  # Assuming site is a coord with indices
+        # Re-attach site-specific coordinates (latitude, longitude)
+        ds_final["latitude"] = ds_subset.latitude
+        ds_final["longitude"] = ds_subset.longitude
 
-            # Find non-missing times
-            valid_times = site_data.where(site_data != -1, drop=True)
-            for t in range(len(valid_times.time)):
-                val = float(valid_times.isel(time=t))
-                t_val = pd.to_datetime(valid_times.time.isel(time=t).values)
+        # Round values for storage efficiency
+        ds_final["pm25"] = ds_final["pm25"].round(4)
 
-                index_new_list.append(site_idx)
-                time_new_list.append(str(t_val))
-                pm25_new_list.append(round(val, 4))
-                lat_new_list.append(site_lat)
-                lon_new_list.append(site_lon)
-
-        return index_new_list, time_new_list, pm25_new_list, lat_new_list, lon_new_list
+        ds_final.attrs["history"] = f"{datetime.now()}: Extracted AirNow PM2.5 via Aero Protocol."
+        return ds_final
