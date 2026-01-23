@@ -1,14 +1,16 @@
-#===================
+# ===================
 # Import Library
-#===================
+# ===================
+import os
 from typing import List, Optional
+
 import numpy as np
 import pandas as pd
-import os
 
-#===========================
+
+# ===========================
 # Define Class and Functions
-#===========================
+# ===========================
 class PM25Preprocessor:
     """
     Load, merge, clean and prepare PM2.5 Excel files.
@@ -18,9 +20,9 @@ class PM25Preprocessor:
         self,
         dir_: str,
         day_list: Optional[List[str]] = None,
-        pattern_prefix: str = 'CONUS_PM25_2025_',
-        output_csv: str = 'PM25_2025JanToApr_HourlyData_LOG.csv',
-        dropna: bool = True
+        pattern_prefix: str = "CONUS_PM25_2025_",
+        output_csv: str = "PM25_2025JanToApr_HourlyData_LOG.csv",
+        dropna: bool = True,
     ):
         self.dir_ = dir_
         self.day_list = day_list if day_list is not None else list(self.DEFAULT_DAY_LIST)
@@ -59,11 +61,11 @@ class PM25Preprocessor:
         if self.dropna:
             df = df.dropna()
         # keep rows where v1_blh != 'no_value' if column exists
-        if 'v1_blh' in df.columns:
-            df = df[df['v1_blh'] != 'no_value']
+        if "v1_blh" in df.columns:
+            df = df[df["v1_blh"] != "no_value"]
         # drop duplicates on ('site_index','time_utc')
-        if {'site_index', 'time_utc'}.issubset(df.columns):
-            df = df.drop_duplicates(subset=['site_index', 'time_utc'], keep='first')
+        if {"site_index", "time_utc"}.issubset(df.columns):
+            df = df.drop_duplicates(subset=["site_index", "time_utc"], keep="first")
         else:
             print("Warning: required columns 'site_index' and/or 'time_utc' not found for duplicate removal.")
         self.df_processed = df
@@ -75,8 +77,8 @@ class PM25Preprocessor:
             if self.df_processed is None:
                 raise RuntimeError("Call clean() first or provide a DataFrame")
             df = self.df_processed
-        if {'site_index', 'time_utc'}.issubset(df.columns):
-            df = df.sort_values(by=['site_index', 'time_utc']).reset_index(drop=True)
+        if {"site_index", "time_utc"}.issubset(df.columns):
+            df = df.sort_values(by=["site_index", "time_utc"]).reset_index(drop=True)
         else:
             print("Warning: cannot sort because 'site_index' or 'time_utc' missing.")
         self.df_processed = df
@@ -95,19 +97,19 @@ class PM25Preprocessor:
             df = self.df_processed
 
         # compute log_pm25
-        if 'airnow_obs_pm25' in df.columns:
+        if "airnow_obs_pm25" in df.columns:
             # guard against non-positive values
-            safe_vals = df['airnow_obs_pm25'].astype(float)
+            safe_vals = df["airnow_obs_pm25"].astype(float)
             safe_vals = safe_vals.where(safe_vals > 0, np.nan)
-            df['log_pm25'] = np.log(safe_vals)
+            df["log_pm25"] = np.log(safe_vals)
         else:
             print("Warning: 'airnow_obs_pm25' column not found; 'log_pm25' not created.")
 
         # parse time and create hour and day_of_year
-        if 'time_utc' in df.columns:
-            time_utc = pd.to_datetime(df['time_utc'], errors='coerce')
-            df['hour_utc'] = time_utc.dt.hour
-            df['day_of_year'] = time_utc.dt.dayofyear
+        if "time_utc" in df.columns:
+            time_utc = pd.to_datetime(df["time_utc"], errors="coerce")
+            df["hour_utc"] = time_utc.dt.hour
+            df["day_of_year"] = time_utc.dt.dayofyear
         else:
             print("Warning: 'time_utc' column not found; 'hour_utc'/'day_of_year' not created.")
 
@@ -133,25 +135,3 @@ class PM25Preprocessor:
         if save:
             self.save_csv(output_path)
         return self.df_processed
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

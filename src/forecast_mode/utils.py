@@ -1,62 +1,108 @@
-#===========
-#import library
-#=============
+"""
+Utility functions for DAFCOM.
+🍃⚡ Aero-compliant utilities for regridding and interpolation.
+"""
 
-from typing import List, Optional, Tuple, Dict, Any
-import os
 from datetime import datetime, timedelta
-import numpy as np
-import pandas as pd
-from netCDF4 import Dataset
-# import xlsxwriter
-from math import radians, sin, cos, asin, sqrt
+from typing import Any, Optional, Tuple
 
-#=============
-# def class and functions
-#==============
+import numpy as np
 import xarray as xr
 import xesmf as xe
 
-def Regrid(ds, variable_name, ur_lat, ll_lat, ur_lon, ll_lon, resolution, interpolation_method):
-    #resolution type == float
-    #interpolation_method type = str
-    
+
+def Regrid(
+    ds: xr.Dataset,
+    variable_name: str,
+    ur_lat: float,
+    ll_lat: float,
+    ur_lon: float,
+    ll_lon: float,
+    resolution: float,
+    interpolation_method: str = "bilinear",
+) -> xr.Dataset:
+    """
+    Regrid a variable from a dataset to a regular lat/lon grid.
+
+    🍃⚡ This function is backend-agnostic and preserves Dask laziness.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The input dataset containing the variable to regrid.
+    variable_name : str
+        The name of the variable to regrid.
+    ur_lat : float
+        Upper right latitude.
+    ll_lat : float
+        Lower left latitude.
+    ur_lon : float
+        Upper right longitude.
+    ll_lon : float
+        Lower left longitude.
+    resolution : float
+        The desired resolution in degrees.
+    interpolation_method : str, default 'bilinear'
+        The interpolation method to use (passed to xESMF).
+
+    Returns
+    -------
+    xr.Dataset
+        A new dataset with the regridded variable.
+    """
     # Define output grid
+    # Using np.arange can lead to floating point issues with endpoint,
+    # but maintaining compatibility with original logic.
+    lat_coords = np.arange(ur_lat, ll_lat, -resolution)
+    lon_coords = np.arange(ll_lon, ur_lon, resolution)
+
     ds_out = xr.Dataset(
         {
-            "lat": (["lat"], np.arange(ur_lat, ll_lat, -resolution)),
-            "lon": (["lon"], np.arange(ll_lon, ur_lon, resolution))
+            "lat": (["lat"], lat_coords),
+            "lon": (["lon"], lon_coords),
         }
     )
 
     # Perform regridding
-    regridder = xe.Regridder(ds, ds_out, interpolation_method)  #default interpolation_method = 'bilinear'
+    # xe.Regridder works with Dask-backed xarray objects.
+    regridder = xe.Regridder(ds, ds_out, interpolation_method)
     dr_out = regridder(ds[variable_name])
 
     # Create final dataset with regridded data
+    # 🍃⚡ REMOVED .values call to preserve laziness.
     final_ds = xr.Dataset(
         {
-            variable_name: (['time', 'latitude', 'longitude'], dr_out.values),
-            'lat': ('latitude', np.arange(ur_lat, ll_lat, -resolution)),
-            'lon': ('longitude', np.arange(ll_lon, ur_lon, resolution))
+            variable_name: (["time", "latitude", "longitude"], dr_out.data),
+            "lat": ("latitude", lat_coords),
+            "lon": ("longitude", lon_coords),
         },
-        coords={
-            'time': ds.time
-        }
+        coords={"time": ds.time},
     )
-    
+
+    final_ds.attrs["history"] = f"{datetime.now()}: Regridded {variable_name} using {interpolation_method} via Aero Protocol."
+
     return final_ds
 
 
-
-
-
 class Interpolator:
+    """
+    Class for temporal and spatial interpolation.
+    """
 
-    def _find_grid_cell(self, lat_arr: np.ndarray, lon_arr: np.ndarray, lat_pt: float, lon_pt: float) -> Optional[Tuple[int,int,float,float]]:
-        """Find indices i,j such that lat_arr[i] <= lat_pt <= lat_arr[i+1] (or reversed).
-           Return (i, j, w_lat, w_lon) with weights in [0,1] relative to lower index.
-           If outside grid return None.
+    def __init__(self, dir_year: str, dir_month: str, date: int, LAT: np.ndarray, LON: np.ndarray):
+        self.dir_year = dir_year
+        self.dir_month = dir_month
+        self.date = date
+        self.LAT = LAT
+        self.LON = LON
+
+    def _find_grid_cell(
+        self, lat_arr: np.ndarray, lon_arr: np.ndarray, lat_pt: float, lon_pt: float
+    ) -> Optional[Tuple[int, int, float, float]]:
+        """
+        Find indices i,j such that lat_arr[i] <= lat_pt <= lat_arr[i+1] (or reversed).
+        Return (i, j, w_lat, w_lon) with weights in [0,1] relative to lower index.
+        If outside grid return None.
         """
         lat_asc = np.all(np.diff(lat_arr) > 0)
         lon_asc = np.all(np.diff(lon_arr) > 0)
@@ -122,9 +168,10 @@ class Interpolator:
     def get_itp(self, time_obs: datetime, lat_obs: float, lon_obs: float, variable_model: np.ndarray) -> Any:
         """Temporal + spatial interpolation for a given variable_model shaped (T, M, N) or (M,N)."""
         # temporal: find which hour slice to use
-        # build model time list starting at local noon of date (same as earlier)
+        # build model time list starting at local noon of date
         year = int(self.dir_year)
-        month = int(self.dir_month.replace(self.dir_year, '').replace('_', ''))
+        month_str = self.dir_month.replace(self.dir_year, "").replace("_", "")
+        month = int(month_str)
         start_date_model = datetime(year, month, self.date, 12, 0, 0)
         time_model_list = [start_date_model + timedelta(hours=x) for x in range(variable_model.shape[0])]
 
@@ -136,16 +183,15 @@ class Interpolator:
                 k = idx
                 break
         if k is None:
-            return 'no_value'
+            return "no_value"
 
         # spatial: variable_model[k] is 2D
         grid2d = variable_model[k] if variable_model.ndim == 3 else variable_model
         res = self._find_grid_cell(self.LAT, self.LON, lat_obs, lon_obs)
         if res is None:
-            return 'no_value'
+            return "no_value"
         i_low, j_low, w_lat, w_lon = res
         try:
             return self._bilinear_interp(grid2d, i_low, j_low, w_lat, w_lon)
         except Exception:
-            return 'no_value'
-
+            return "no_value"
