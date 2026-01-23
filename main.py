@@ -4,6 +4,10 @@
 
 import time
 
+import numpy as np
+import xarray as xr
+import xesmf as xe
+
 from src.forecast_mode.config import load_config
 from src.forecast_mode.dataloader import Load_AOD, Load_Chem, Load_Meteo, Load_Observation, Load_Static_Data
 from src.forecast_mode.utils import Regrid
@@ -72,17 +76,24 @@ ll_lon = config["domain"]["lower_left_longitude"]
 resolution = config["resolution"]
 interpolation_method = config["interpolation_method"]
 
-final_aod = Regrid(AOD_dataset, "aod", ur_lat, ll_lat, ur_lon, ll_lon, resolution, interpolation_method)
-final_meteo_sp = Regrid(METEO_SP_dataset, "surface_pressure", ur_lat, ll_lat, ur_lon, ll_lon, resolution, interpolation_method)
-final_meteo_t2m = Regrid(METEO_T2M_dataset, "temperature_2m", ur_lat, ll_lat, ur_lon, ll_lon, resolution, interpolation_method)
-final_meteo_rh = Regrid(METEO_RH_dataset, "humidity", ur_lat, ll_lat, ur_lon, ll_lon, resolution, interpolation_method)
-final_meteo_evp = Regrid(METEO_EVP_dataset, "evaporation", ur_lat, ll_lat, ur_lon, ll_lon, resolution, interpolation_method)
-final_meteo_wind_u = Regrid(METEO_WINDU_dataset, "wind speed u", ur_lat, ll_lat, ur_lon, ll_lon, resolution, interpolation_method)
-final_meteo_wind_v = Regrid(METEO_WINDV_dataset, "wind speed v", ur_lat, ll_lat, ur_lon, ll_lon, resolution, interpolation_method)
-final_meteo_pblh = Regrid(METEO_PBLH_dataset, "pblh", ur_lat, ll_lat, ur_lon, ll_lon, resolution, interpolation_method)
-final_meteo_prep = Regrid(METEO_PREP_dataset, "precipitation", ur_lat, ll_lat, ur_lon, ll_lon, resolution, interpolation_method)
-final_chem_pm25 = Regrid(CHEM_PM25_dataset, "pm25", ur_lat, ll_lat, ur_lon, ll_lon, resolution, interpolation_method)
-final_chem_o3 = Regrid(CHEM_O3_dataset, "o3", ur_lat, ll_lat, ur_lon, ll_lon, resolution, interpolation_method)
+# 🍃⚡ Aero Protocol: Initialize a single Regridder to reuse weight matrices.
+# This significantly speeds up processing when regridding multiple variables to the same grid.
+lat_coords = np.arange(ur_lat, ll_lat, -resolution)
+lon_coords = np.arange(ll_lon, ur_lon, resolution)
+ds_out = xr.Dataset({"lat": (["lat"], lat_coords), "lon": (["lon"], lon_coords)})
+regridder = xe.Regridder(AOD_dataset, ds_out, interpolation_method)
+
+final_aod = Regrid(AOD_dataset, "aod", regridder=regridder)
+final_meteo_sp = Regrid(METEO_SP_dataset, "surface_pressure", regridder=regridder)
+final_meteo_t2m = Regrid(METEO_T2M_dataset, "temperature_2m", regridder=regridder)
+final_meteo_rh = Regrid(METEO_RH_dataset, "humidity", regridder=regridder)
+final_meteo_evp = Regrid(METEO_EVP_dataset, "evaporation", regridder=regridder)
+final_meteo_wind_u = Regrid(METEO_WINDU_dataset, "wind speed u", regridder=regridder)
+final_meteo_wind_v = Regrid(METEO_WINDV_dataset, "wind speed v", regridder=regridder)
+final_meteo_pblh = Regrid(METEO_PBLH_dataset, "pblh", regridder=regridder)
+final_meteo_prep = Regrid(METEO_PREP_dataset, "precipitation", regridder=regridder)
+final_chem_pm25 = Regrid(CHEM_PM25_dataset, "pm25", regridder=regridder)
+final_chem_o3 = Regrid(CHEM_O3_dataset, "o3", regridder=regridder)
 print("finish part 3")
 print(f"Step 3 done, elapsed: {time.time() - start:.2f}s")
 
