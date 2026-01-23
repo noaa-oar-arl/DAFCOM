@@ -81,7 +81,7 @@ def test_regrid_mocked():
 
     # Assertions
     assert "pollutant" in res.data_vars
-    assert res.pollutant.dims == ("time", "latitude", "longitude")
+    assert res.pollutant.dims == ("time", "lat", "lon")
     assert "Original history" in res.attrs["history"]
     assert "Aero Protocol" in res.attrs["history"]
     mock_regridder_inst.assert_called_once()
@@ -115,6 +115,55 @@ def test_regrid_no_regridder_mocked():
     assert "lon" in args[1].coords
 
     assert "pollutant" in res.data_vars
+
+
+def test_regrid_interpolator_integration():
+    """
+    🍃⚡ Aero Protocol Integration Test: Verify Regrid output works seamlessly with Interpolator.
+    """
+    rng = np.random.default_rng()
+    # 1. Source Data (2 time steps to avoid scipy 1D interp issues)
+    times = [datetime(2023, 8, 1, 0), datetime(2023, 8, 1, 1)]
+    ds_src = xr.Dataset(
+        {"aod": (["time", "lat", "lon"], rng.random((2, 4, 4)))},
+        coords={"time": times, "lat": [40, 41, 42, 43], "lon": [-100, -99, -98, -97]},
+    )
+
+    # 2. Mock Regridder for target grid
+    mock_output = xr.DataArray(
+        rng.random((2, 2, 2)),
+        dims=["time", "lat", "lon"],
+        coords={"time": times, "lat": [40.5, 41.5], "lon": [-99.5, -98.5]},
+    )
+    mock_regridder = MagicMock()
+    mock_regridder.return_value = mock_output
+    mock_regridder.out_horiz_dims_coords = {"lat": [40.5, 41.5], "lon": [-99.5, -98.5]}
+
+    # 3. Regrid
+    ds_regridded = Regrid(ds_src, "aod", regridder=mock_regridder)
+
+    # 4. Interpolate from regridded data
+    itp = Interpolator(ds_regridded)
+    # Use a time between the two steps
+    res = itp.get_itp(datetime(2023, 8, 1, 0, 30), 41.0, -99.0, "aod")
+
+    assert not np.isnan(res.values)
+    assert res.dims == ()  # Scalar output for scalar inputs
+
+
+def test_interpolator_time_synthesis():
+    """
+    Verify Interpolator's ability to synthesize time coordinates from metadata.
+    """
+    rng = np.random.default_rng()
+    # Dataset without time coordinate
+    ds = xr.Dataset({"pm25": (["time", "lat", "lon"], rng.random((2, 4, 4)))}, coords={"lat": [1, 2, 3, 4], "lon": [1, 2, 3, 4]})
+
+    # Initialize with metadata
+    itp = Interpolator(ds, dir_year="2023", dir_month="2023_08", date=1)
+
+    assert "time" in itp.ds.coords
+    assert itp.ds.time.values[0] == np.datetime64("2023-08-01T12:00:00")
 
 
 if __name__ == "__main__":

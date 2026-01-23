@@ -3,7 +3,7 @@ Utility functions for DAFCOM.
 🍃⚡ Aero-compliant utilities for regridding and interpolation.
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, Union
 
 import numpy as np
@@ -85,9 +85,8 @@ def Regrid(
 
     # Create final dataset with regridded data
     # 🍃⚡ Using xarray methods to preserve metadata and avoid .values calls.
-    # We rename dimensions to 'latitude' and 'longitude' to match the original expected output format.
+    # We use 'lat' and 'lon' as the standard coordinate names.
     final_ds = dr_out.to_dataset(name=variable_name)
-    final_ds = final_ds.rename({"lat": "latitude", "lon": "longitude"})
 
     # Update history and preserve original dataset attributes if any
     history = ds.attrs.get("history", "")
@@ -105,16 +104,37 @@ class Interpolator:
     supporting both NumPy and Dask backends efficiently.
     """
 
-    def __init__(self, ds_model: xr.Dataset):
+    def __init__(
+        self,
+        ds_model: xr.Dataset,
+        dir_year: Optional[str] = None,
+        dir_month: Optional[str] = None,
+        date: Optional[int] = None,
+    ):
         """
-        Initialize with a model dataset.
+        Initialize with a model dataset and optional metadata for time synthesis.
 
         Parameters
         ----------
         ds_model : xr.Dataset
-            The model dataset containing dimensions (time, lat, lon) or similar.
+            The model dataset.
+        dir_year : str, optional
+            Year string for time synthesis if 'time' coordinate is missing.
+        dir_month : str, optional
+            Month string for time synthesis if 'time' coordinate is missing.
+        date : int, optional
+            Day for time synthesis if 'time' coordinate is missing.
         """
         self.ds = ds_model
+
+        # Restore time synthesis logic if time is missing but metadata is provided
+        if "time" not in self.ds.coords and all(v is not None for v in [dir_year, dir_month, date]):
+            year = int(dir_year)  # type: ignore
+            month_str = dir_month.replace(dir_year, "").replace("_", "")  # type: ignore
+            month = int(month_str)
+            start_date_model = datetime(year, month, date, 12, 0, 0)  # type: ignore
+            time_coords = [start_date_model + timedelta(hours=x) for x in range(self.ds.sizes.get("time", 1))]
+            self.ds = self.ds.assign_coords(time=time_coords)
 
     def get_itp(
         self,
@@ -128,6 +148,7 @@ class Interpolator:
 
         🍃⚡ Aero Protocol: Backend-agnostic and preserves Dask laziness.
         Supports vectorized interpolation if inputs are arrays.
+        Automatically handles various coordinate names (e.g., lat/latitude).
 
         Parameters
         ----------
@@ -145,11 +166,18 @@ class Interpolator:
         xr.DataArray
             Interpolated values. Returns NaN where points are outside the model domain.
         """
+        # Map input names to dataset coordinate names
+        interp_dict = {"time": time_obs}
+
+        # Check for latitude/longitude names
+        lat_name = next((name for name in ["lat", "latitude"] if name in self.ds.coords), "lat")
+        lon_name = next((name for name in ["lon", "longitude"] if name in self.ds.coords), "lon")
+
+        interp_dict[lat_name] = lat_obs
+        interp_dict[lon_name] = lon_obs
+
         # xarray.Dataset.interp handles both scalar and vectorized interpolation.
-        # It also automatically handles Dask arrays if the input dataset is Dask-backed.
         return self.ds[variable_name].interp(
-            time=time_obs,
-            lat=lat_obs,
-            lon=lon_obs,
+            **interp_dict,
             method="linear",
         )
