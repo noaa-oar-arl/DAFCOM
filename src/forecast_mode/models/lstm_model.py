@@ -69,7 +69,7 @@ class LSTMPipeline:
             Whether to shuffle the data before splitting.
         """
         self.csv_path = csv_path
-        self.df = self._to_dataframe(df) if df is not None else None
+        self.df = df
         self.time_step = time_step
         self.time_step_short = time_step_short
         self.features = features
@@ -90,40 +90,6 @@ class LSTMPipeline:
         self.Y_test: Optional[np.ndarray] = None
         self.model: Any = None
 
-    def _to_dataframe(self, data: Union[pd.DataFrame, xr.Dataset, xr.DataArray]) -> pd.DataFrame:
-        """
-        Convert xarray objects to pandas DataFrame if necessary.
-
-        Parameters
-        ----------
-        data : pd.DataFrame or xr.Dataset or xr.DataArray
-            Input data.
-
-        Returns
-        -------
-        pd.DataFrame
-            Converted DataFrame.
-        """
-        if isinstance(data, (xr.Dataset, xr.DataArray)):
-            # 🍃⚡ Aero Protocol: Convert to dataframe only for ML backend.
-            return data.to_dataframe().reset_index()
-        return data.copy()
-
-    def load_data(self) -> pd.DataFrame:
-        """
-        Load data from path or return the provided DataFrame.
-
-        Returns
-        -------
-        pd.DataFrame
-            The loaded training data.
-        """
-        if self.df is not None:
-            return self.df.copy()
-        if not self.csv_path:
-            raise ValueError("No csv_path or Data provided")
-        return pd.read_csv(self.csv_path)
-
     def prepare_sequences(
         self, df: Optional[Union[pd.DataFrame, xr.Dataset, xr.DataArray]] = None
     ) -> Tuple[np.ndarray, np.ndarray]:
@@ -141,9 +107,17 @@ class LSTMPipeline:
             Features (X) and target (Y) sequences.
         """
         if df is None:
-            df = self.load_data()
+            df = self.df if self.df is not None else self.csv_path
+
+        if isinstance(df, str):
+            df = pd.read_csv(df)
+        elif isinstance(df, (xr.Dataset, xr.DataArray)):
+            # 🍃⚡ Aero Protocol: Convert to dataframe only when needed for non-Xarray backend.
+            df = df.to_dataframe().reset_index()
+        elif isinstance(df, pd.DataFrame):
+            df = df.copy()
         else:
-            df = self._to_dataframe(df)
+            raise ValueError("No data provided or unsupported format")
 
         df["time_utc"] = pd.to_datetime(df["time_utc"], format="%Y-%m-%d %H:%M:%S")
 
@@ -168,14 +142,25 @@ class LSTMPipeline:
         data_y = pd.DataFrame(np.array(data_y).reshape((len(data_y), 1)))
         data_y = data_y.rename(columns={0: self.target})
 
-        self.scaler_x = RobustScaler()
-        data_scaled_X = self.scaler_x.fit_transform(data_x)
+        # Load or fit scalers to ensure consistency across iterative training batches.
+        if self.scaler_x is None:
+            if os.path.exists(self.scaler_x_path):
+                self.scaler_x = joblib.load(self.scaler_x_path)
+            else:
+                self.scaler_x = RobustScaler()
+                self.scaler_x.fit(data_x)
+                joblib.dump(self.scaler_x, self.scaler_x_path)
 
-        self.scaler_y = RobustScaler()
-        data_scaled_Y = self.scaler_y.fit_transform(data_y)
+        if self.scaler_y is None:
+            if os.path.exists(self.scaler_y_path):
+                self.scaler_y = joblib.load(self.scaler_y_path)
+            else:
+                self.scaler_y = RobustScaler()
+                self.scaler_y.fit(data_y)
+                joblib.dump(self.scaler_y, self.scaler_y_path)
 
-        joblib.dump(self.scaler_x, self.scaler_x_path)
-        joblib.dump(self.scaler_y, self.scaler_y_path)
+        data_scaled_X = self.scaler_x.transform(data_x)
+        data_scaled_Y = self.scaler_y.transform(data_y)
 
         X = []
         Y = []

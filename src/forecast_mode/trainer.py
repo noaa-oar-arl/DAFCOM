@@ -16,6 +16,7 @@ import pandas as pd
 import xarray as xr
 
 from .models.lstm_model import LSTMPipeline
+from .models.xgb_model import XGBPipeline
 
 
 class ModelTrainer:
@@ -77,3 +78,48 @@ class ModelTrainer:
             histories.append(history)
 
         return histories
+
+    def train_xgb_iterative(
+        self,
+        data_batches: List[Union[pd.DataFrame, xr.Dataset, xr.DataArray]],
+        features: List[str],
+        target: str = "pm25",
+        num_boost_round_per_batch: int = 5,
+        model_path: str = "xgb_model.json",
+    ) -> List[Any]:
+        """
+        Train an XGBoost model iteratively on a list of data batches.
+
+        🍃⚡ Aero Protocol: Supports xr.Dataset and xr.DataArray inputs.
+
+        Parameters
+        ----------
+        data_batches : List[Union[pd.DataFrame, xr.Dataset, xr.DataArray]]
+            A list of data batches to train on.
+        features : List[str]
+            Features to use for training.
+        target : str, default 'pm25'
+            The target variable.
+        num_boost_round_per_batch : int, default 5
+            Number of boosting rounds for each batch.
+        model_path : str, default 'xgb_model.json'
+            Where to save/load the model.
+
+        Returns
+        -------
+        List[Any]
+            A list of trained boosters (or metadata) from each training iteration.
+        """
+        pipeline = XGBPipeline(
+            features=features,
+            target=target,
+            model_path=model_path,
+        )
+
+        models = []
+        for i, batch in enumerate(data_batches):
+            print(f"--- Training Batch {i + 1}/{len(data_batches)} ---")
+            booster = pipeline.train_iterative(batch, num_boost_round=num_boost_round_per_batch)
+            models.append(booster)
+
+        return models
