@@ -6,7 +6,7 @@ import time
 
 import numpy as np
 import xarray as xr
-import xesmf as xe
+from xregrid import Regridder
 
 from src.forecast_mode.config import load_config
 from src.forecast_mode.dataloader import Load_AOD, Load_Chem, Load_Meteo, Load_Observation, Load_Static_Data
@@ -81,7 +81,7 @@ interpolation_method = config["interpolation_method"]
 lat_coords = np.arange(ur_lat, ll_lat, -resolution)
 lon_coords = np.arange(ll_lon, ur_lon, resolution)
 ds_out = xr.Dataset({"lat": (["lat"], lat_coords), "lon": (["lon"], lon_coords)})
-regridder = xe.Regridder(AOD_dataset, ds_out, interpolation_method)
+regridder = Regridder(AOD_dataset, ds_out, method=interpolation_method)
 
 final_aod = Regrid(AOD_dataset, "aod", regridder=regridder)
 final_meteo_sp = Regrid(METEO_SP_dataset, "surface_pressure", regridder=regridder)

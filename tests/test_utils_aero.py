@@ -1,18 +1,23 @@
 import sys
-from unittest.mock import MagicMock
+from datetime import datetime, timedelta
+from unittest.mock import MagicMock, patch
 
-# Mock xesmf and esmpy before they are imported by src.forecast_mode.utils
-mock_xe = MagicMock()
-mock_esmf = MagicMock()
-sys.modules["xesmf"] = mock_xe
-sys.modules["esmpy"] = mock_esmf
-sys.modules["ESMF"] = mock_esmf
+import numpy as np
+import pytest
+import xarray as xr
 
-from datetime import datetime  # noqa: E402
+# Mock xregrid and esmpy before they are imported by src.forecast_mode.utils
+# if they are not already available.
+try:
+    import esmpy  # noqa: F401
+    import xregrid  # noqa: F401
 
-import numpy as np  # noqa: E402
-import pytest  # noqa: E402
-import xarray as xr  # noqa: E402
+    REAL_AVAILABLE = True
+except ImportError:
+    sys.modules["xregrid"] = MagicMock()
+    sys.modules["esmpy"] = MagicMock()
+    sys.modules["ESMF"] = MagicMock()
+    REAL_AVAILABLE = False
 
 from src.forecast_mode.utils import Interpolator, Regrid  # noqa: E402
 
@@ -74,7 +79,6 @@ def test_regrid_mocked():
 
     mock_regridder_inst = MagicMock()
     mock_regridder_inst.return_value = mock_output
-    mock_regridder_inst.out_horiz_dims_coords = {"lat": [1.5, 2.5], "lon": [1.5, 2.5]}
 
     # Call Regrid with mocked regridder
     res = Regrid(ds, "pollutant", regridder=mock_regridder_inst)
@@ -102,17 +106,19 @@ def test_regrid_no_regridder_mocked():
     mock_regridder_inst.return_value = xr.DataArray(
         rng.random((1, 2, 2)), dims=["time", "lat", "lon"], coords={"time": ds.time, "lat": [10, 20], "lon": [100, 110]}
     )
-    mock_xe.Regridder.return_value = mock_regridder_inst
 
-    # Call Regrid without regridder
-    res = Regrid(ds, "pollutant", ur_lat=20, ll_lat=10, ur_lon=110, ll_lon=100, resolution=5)
+    with patch("src.forecast_mode.utils.Regridder") as MockRegridder:
+        MockRegridder.return_value = mock_regridder_inst
+        # Call Regrid without regridder
+        res = Regrid(ds, "pollutant", ur_lat=20, ll_lat=10, ur_lon=110, ll_lon=100, resolution=5)
 
-    # Verify Regridder was created with correct params
-    mock_xe.Regridder.assert_called_once()
-    args, _ = mock_xe.Regridder.call_args
-    assert args[0] == ds
-    assert "lat" in args[1].coords
-    assert "lon" in args[1].coords
+        # Verify Regridder was created with correct params
+        MockRegridder.assert_called_once()
+        args, kwargs = MockRegridder.call_args
+        assert args[0] == ds
+        assert "lat" in args[1].coords
+        assert "lon" in args[1].coords
+        assert kwargs["method"] == "bilinear"
 
     assert "pollutant" in res.data_vars
 
@@ -137,7 +143,6 @@ def test_regrid_interpolator_integration():
     )
     mock_regridder = MagicMock()
     mock_regridder.return_value = mock_output
-    mock_regridder.out_horiz_dims_coords = {"lat": [40.5, 41.5], "lon": [-99.5, -98.5]}
 
     # 3. Regrid
     ds_regridded = Regrid(ds_src, "aod", regridder=mock_regridder)
@@ -149,6 +154,24 @@ def test_regrid_interpolator_integration():
 
     assert not np.isnan(res.values)
     assert res.dims == ()  # Scalar output for scalar inputs
+
+
+@pytest.mark.skipif(not REAL_AVAILABLE, reason="xregrid real not available")
+def test_regrid_xregrid_integration():
+    """
+    🍃⚡ Aero Protocol: Integration test with real xregrid (if available).
+    """
+    rng = np.random.default_rng()
+    ds = xr.Dataset(
+        {"pollutant": (["time", "lat", "lon"], rng.random((1, 4, 4)))},
+        coords={"time": [datetime(2023, 1, 1)], "lat": [1, 2, 3, 4], "lon": [1, 2, 3, 4]},
+    )
+
+    res = Regrid(ds, "pollutant", ur_lat=3.5, ll_lat=1.5, ur_lon=3.5, ll_lon=1.5, resolution=1.0)
+
+    assert "pollutant" in res.data_vars
+    assert res.pollutant.shape == (1, 2, 2)
+    assert "Aero Protocol" in res.attrs["history"]
 
 
 def test_interpolator_time_synthesis():
