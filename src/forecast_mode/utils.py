@@ -1,151 +1,179 @@
-#===========
-#import library
-#=============
+"""
+Utility functions for DAFCOM.
+🍃⚡ Aero-compliant utilities for regridding and interpolation.
+"""
 
-from typing import List, Optional, Tuple, Dict, Any
-import os
 from datetime import datetime, timedelta
+from typing import Optional, Union
+
 import numpy as np
-import pandas as pd
-from netCDF4 import Dataset
-# import xlsxwriter
-from math import radians, sin, cos, asin, sqrt
-
-#=============
-# def class and functions
-#==============
 import xarray as xr
-import xesmf as xe
+from xregrid import Regridder
 
-def Regrid(ds, variable_name, ur_lat, ll_lat, ur_lon, ll_lon, resolution, interpolation_method):
-    #resolution type == float
-    #interpolation_method type = str
-    
-    # Define output grid
-    ds_out = xr.Dataset(
-        {
-            "lat": (["lat"], np.arange(ur_lat, ll_lat, -resolution)),
-            "lon": (["lon"], np.arange(ll_lon, ur_lon, resolution))
-        }
-    )
+
+def Regrid(
+    ds: xr.Dataset,
+    variable_name: str,
+    ur_lat: Optional[float] = None,
+    ll_lat: Optional[float] = None,
+    ur_lon: Optional[float] = None,
+    ll_lon: Optional[float] = None,
+    resolution: Optional[float] = None,
+    interpolation_method: str = "bilinear",
+    regridder: Optional[Regridder] = None,
+) -> xr.Dataset:
+    """
+    Regrid a variable from a dataset to a regular lat/lon grid.
+
+    🍃⚡ Aero Protocol: This function is backend-agnostic and preserves Dask laziness.
+    It supports reusing an existing XRegrid Regridder for performance optimization.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The input dataset containing the variable to regrid.
+    variable_name : str
+        The name of the variable to regrid.
+    ur_lat : float, optional
+        Upper right latitude. Required if regridder is not provided.
+    ll_lat : float, optional
+        Lower left latitude. Required if regridder is not provided.
+    ur_lon : float, optional
+        Upper right longitude. Required if regridder is not provided.
+    ll_lon : float, optional
+        Lower left longitude. Required if regridder is not provided.
+    resolution : float, optional
+        The desired resolution in degrees. Required if regridder is not provided.
+    interpolation_method : str, default 'bilinear'
+        The interpolation method to use (passed to XRegrid).
+    regridder : xregrid.Regridder, optional
+        An existing XRegrid Regridder instance to reuse.
+
+    Returns
+    -------
+    xr.Dataset
+        A new dataset with the regridded variable, preserving time coordinates and history.
+
+    Raises
+    ------
+    ValueError
+        If neither coordinates/resolution nor a regridder is provided.
+    """
+    if regridder is None:
+        if any(v is None for v in [ur_lat, ll_lat, ur_lon, ll_lon, resolution]):
+            raise ValueError("Coordinates and resolution must be provided if regridder is None.")
+
+        # Define output grid
+        lat_coords = np.arange(ur_lat, ll_lat, -resolution)  # type: ignore
+        lon_coords = np.arange(ll_lon, ur_lon, resolution)  # type: ignore
+
+        ds_out = xr.Dataset(
+            {
+                "lat": (["lat"], lat_coords),
+                "lon": (["lon"], lon_coords),
+            }
+        )
+        regridder = Regridder(ds, ds_out, method=interpolation_method)
 
     # Perform regridding
-    regridder = xe.Regridder(ds, ds_out, interpolation_method)  #default interpolation_method = 'bilinear'
+    # XRegrid Regridder works with Dask-backed xarray objects.
     dr_out = regridder(ds[variable_name])
 
     # Create final dataset with regridded data
-    final_ds = xr.Dataset(
-        {
-            variable_name: (['time', 'latitude', 'longitude'], dr_out.values),
-            'lat': ('latitude', np.arange(ur_lat, ll_lat, -resolution)),
-            'lon': ('longitude', np.arange(ll_lon, ur_lon, resolution))
-        },
-        coords={
-            'time': ds.time
-        }
-    )
-    
+    # 🍃⚡ Using xarray methods to preserve metadata and avoid .values calls.
+    # We use 'lat' and 'lon' as the standard coordinate names.
+    final_ds = dr_out.to_dataset(name=variable_name)
+
+    # Update history and preserve original dataset attributes if any
+    history = ds.attrs.get("history", "")
+    new_entry = f"{datetime.now()}: Regridded {variable_name} using {interpolation_method} via Aero Protocol."
+    final_ds.attrs["history"] = f"{history}\n{new_entry}" if history else new_entry
+
     return final_ds
 
 
-
-
-
 class Interpolator:
+    """
+    Class for temporal and spatial interpolation.
 
-    def _find_grid_cell(self, lat_arr: np.ndarray, lon_arr: np.ndarray, lat_pt: float, lon_pt: float) -> Optional[Tuple[int,int,float,float]]:
-        """Find indices i,j such that lat_arr[i] <= lat_pt <= lat_arr[i+1] (or reversed).
-           Return (i, j, w_lat, w_lon) with weights in [0,1] relative to lower index.
-           If outside grid return None.
+    🍃⚡ Aero Protocol: Optimized to use xarray's native interpolation,
+    supporting both NumPy and Dask backends efficiently.
+    """
+
+    def __init__(
+        self,
+        ds_model: xr.Dataset,
+        dir_year: Optional[str] = None,
+        dir_month: Optional[str] = None,
+        date: Optional[int] = None,
+    ):
         """
-        lat_asc = np.all(np.diff(lat_arr) > 0)
-        lon_asc = np.all(np.diff(lon_arr) > 0)
-        if not lat_asc:
-            lat_arr_proc = lat_arr[::-1]
-            lat_index_reversed = True
-        else:
-            lat_arr_proc = lat_arr
-            lat_index_reversed = False
+        Initialize with a model dataset and optional metadata for time synthesis.
 
-        if not lon_asc:
-            lon_arr_proc = lon_arr[::-1]
-            lon_index_reversed = True
-        else:
-            lon_arr_proc = lon_arr
-            lon_index_reversed = False
+        Parameters
+        ----------
+        ds_model : xr.Dataset
+            The model dataset.
+        dir_year : str, optional
+            Year string for time synthesis if 'time' coordinate is missing.
+        dir_month : str, optional
+            Month string for time synthesis if 'time' coordinate is missing.
+        date : int, optional
+            Day for time synthesis if 'time' coordinate is missing.
+        """
+        self.ds = ds_model
 
-        # find insertion indices
-        i = np.searchsorted(lat_arr_proc, lat_pt)
-        j = np.searchsorted(lon_arr_proc, lon_pt)
+        # Restore time synthesis logic if time is missing but metadata is provided
+        if "time" not in self.ds.coords and all(v is not None for v in [dir_year, dir_month, date]):
+            year = int(dir_year)  # type: ignore
+            month_str = dir_month.replace(dir_year, "").replace("_", "")  # type: ignore
+            month = int(month_str)
+            start_date_model = datetime(year, month, date, 12, 0, 0)  # type: ignore
+            time_coords = [start_date_model + timedelta(hours=x) for x in range(self.ds.sizes.get("time", 1))]
+            self.ds = self.ds.assign_coords(time=time_coords)
 
-        # need lower index
-        if i == 0 or i >= len(lat_arr_proc):
-            return None
-        if j == 0 or j >= len(lon_arr_proc):
-            return None
+    def get_itp(
+        self,
+        time_obs: Union[datetime, np.ndarray, xr.DataArray],
+        lat_obs: Union[float, np.ndarray, xr.DataArray],
+        lon_obs: Union[float, np.ndarray, xr.DataArray],
+        variable_name: str,
+    ) -> xr.DataArray:
+        """
+        Temporal + spatial interpolation for a given variable.
 
-        i_low = i - 1
-        j_low = j - 1
+        🍃⚡ Aero Protocol: Backend-agnostic and preserves Dask laziness.
+        Supports vectorized interpolation if inputs are arrays.
+        Automatically handles various coordinate names (e.g., lat/latitude).
 
-        # map back to original indices if reversed
-        if lat_index_reversed:
-            i_low = len(lat_arr) - 2 - i_low
-            i_high = i_low + 1
-        else:
-            i_high = i_low + 1
+        Parameters
+        ----------
+        time_obs : datetime, np.ndarray, or xr.DataArray
+            Observation time(s).
+        lat_obs : float, np.ndarray, or xr.DataArray
+            Observation latitude(s).
+        lon_obs : float, np.ndarray, or xr.DataArray
+            Observation longitude(s).
+        variable_name : str
+            The name of the variable to interpolate.
 
-        if lon_index_reversed:
-            j_low = len(lon_arr) - 2 - j_low
-            j_high = j_low + 1
-        else:
-            j_high = j_low + 1
+        Returns
+        -------
+        xr.DataArray
+            Interpolated values. Returns NaN where points are outside the model domain.
+        """
+        # Map input names to dataset coordinate names
+        interp_dict = {"time": time_obs}
 
-        # compute weights in [0,1] relative to lower index
-        lat_lo = lat_arr[i_low]
-        lat_hi = lat_arr[i_high]
-        lon_lo = lon_arr[j_low]
-        lon_hi = lon_arr[j_high]
-        # guard against zero division
-        if lat_hi == lat_lo or lon_hi == lon_lo:
-            return None
-        w_lat = (lat_pt - lat_lo) / (lat_hi - lat_lo)
-        w_lon = (lon_pt - lon_lo) / (lon_hi - lon_lo)
-        return i_low, j_low, float(w_lat), float(w_lon)
+        # Check for latitude/longitude names
+        lat_name = next((name for name in ["lat", "latitude"] if name in self.ds.coords), "lat")
+        lon_name = next((name for name in ["lon", "longitude"] if name in self.ds.coords), "lon")
 
-    def _bilinear_interp(self, grid2d: np.ndarray, i: int, j: int, w_lat: float, w_lon: float) -> float:
-        """Perform bilinear interpolation on 2D array grid2d using lower-left index (i,j) and weights."""
-        a = (1.0 - w_lon) * grid2d[i, j] + w_lon * grid2d[i, j + 1]
-        b = (1.0 - w_lon) * grid2d[i + 1, j] + w_lon * grid2d[i + 1, j + 1]
-        val = (1.0 - w_lat) * a + w_lat * b
-        return float(val)
+        interp_dict[lat_name] = lat_obs
+        interp_dict[lon_name] = lon_obs
 
-    def get_itp(self, time_obs: datetime, lat_obs: float, lon_obs: float, variable_model: np.ndarray) -> Any:
-        """Temporal + spatial interpolation for a given variable_model shaped (T, M, N) or (M,N)."""
-        # temporal: find which hour slice to use
-        # build model time list starting at local noon of date (same as earlier)
-        year = int(self.dir_year)
-        month = int(self.dir_month.replace(self.dir_year, '').replace('_', ''))
-        start_date_model = datetime(year, month, self.date, 12, 0, 0)
-        time_model_list = [start_date_model + timedelta(hours=x) for x in range(variable_model.shape[0])]
-
-        # find time index (k) where model hour contains time_obs
-        k = None
-        for idx, t_start in enumerate(time_model_list):
-            t_end = t_start + timedelta(hours=1)
-            if t_start <= time_obs < t_end:
-                k = idx
-                break
-        if k is None:
-            return 'no_value'
-
-        # spatial: variable_model[k] is 2D
-        grid2d = variable_model[k] if variable_model.ndim == 3 else variable_model
-        res = self._find_grid_cell(self.LAT, self.LON, lat_obs, lon_obs)
-        if res is None:
-            return 'no_value'
-        i_low, j_low, w_lat, w_lon = res
-        try:
-            return self._bilinear_interp(grid2d, i_low, j_low, w_lat, w_lon)
-        except Exception:
-            return 'no_value'
-
+        # xarray.Dataset.interp handles both scalar and vectorized interpolation.
+        return self.ds[variable_name].interp(
+            **interp_dict,
+            method="linear",
+        )

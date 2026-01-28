@@ -1,15 +1,41 @@
-from typing import List, Dict, Any, Optional
+"""
+Aero-compliant Evaluator Module.
+🍃⚡ This module provides evaluation metrics for air quality forecasts.
+"""
+
+from typing import Any, Dict, List, Optional, Union
+
 import numpy as np
 import pandas as pd
-from sklearn.metrics import mean_squared_error
 from scipy import stats
+from sklearn.metrics import mean_squared_error
 
 
 class Evaluator:
-    def __init__(self, csv_path: Optional[str] = None, df: Optional[pd.DataFrame] = None,
-                 obs_col: str = "obs_pm25", model_cols: Optional[List[str]] = None):
+    """
+    Evaluator class for comparing model predictions against observations.
+    """
+
+    def __init__(
+        self,
+        csv_path: Optional[str] = None,
+        df: Optional[pd.DataFrame] = None,
+        obs_col: str = "obs_pm25",
+        model_cols: Optional[List[str]] = None,
+    ):
         """
-        Provide either `csv_path` or `df`. `model_cols` defaults to common names if not provided.
+        Initialize the evaluator with data and column mappings.
+
+        Parameters
+        ----------
+        csv_path : str, optional
+            Path to the CSV file containing prediction data.
+        df : pd.DataFrame, optional
+            DataFrame containing prediction data.
+        obs_col : str, default 'obs_pm25'
+            Name of the column containing observations.
+        model_cols : List[str], optional
+            Names of the columns containing model predictions.
         """
         self.csv_path = csv_path
         self.df = df
@@ -19,6 +45,14 @@ class Evaluator:
         self.results: Dict[str, Dict[str, float]] = {}
 
     def load_data(self) -> pd.DataFrame:
+        """
+        Load data from CSV or return the provided DataFrame.
+
+        Returns
+        -------
+        pd.DataFrame
+            The loaded data.
+        """
         if self._data is not None:
             return self._data
         if self.df is not None:
@@ -33,8 +67,23 @@ class Evaluator:
             raise KeyError(f"Missing columns in input data: {missing}")
         return self._data
 
-    def compute_pair_metrics(obs: np.ndarray, pred: np.ndarray) -> Dict[str, float]:
-        """Compute metrics for a pair of 1D arrays (obs, pred)."""
+    @staticmethod
+    def compute_pair_metrics(obs: Union[np.ndarray, pd.Series], pred: Union[np.ndarray, pd.Series]) -> Dict[str, Any]:
+        """
+        Compute metrics for a pair of 1D arrays (obs, pred).
+
+        Parameters
+        ----------
+        obs : np.ndarray or pd.Series
+            Observed values.
+        pred : np.ndarray or pd.Series
+            Predicted values.
+
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary of computed metrics (r, mse, mean_bias, std_model, std_obs, n).
+        """
         # drop NaNs in either
         obs = np.asarray(obs, dtype=float)
         pred = np.asarray(pred, dtype=float)
@@ -56,7 +105,21 @@ class Evaluator:
         return {"r": r, "mse": mse, "mean_bias": mean_bias, "std_model": std_model, "std_obs": std_obs, "n": int(mask.sum())}
 
     def evaluate_all(self, csv_path: Optional[str] = None, df: Optional[pd.DataFrame] = None) -> Dict[str, Dict[str, Any]]:
-        """Load data (if needed) and evaluate all model columns against obs_col."""
+        """
+        Load data (if needed) and evaluate all model columns against obs_col.
+
+        Parameters
+        ----------
+        csv_path : str, optional
+            Path to the CSV file (overrides initialization).
+        df : pd.DataFrame, optional
+            DataFrame (overrides initialization).
+
+        Returns
+        -------
+        Dict[str, Dict[str, Any]]
+            Metrics for each model column.
+        """
         if df is not None:
             self.df = df
             self._data = None
@@ -72,6 +135,3 @@ class Evaluator:
             results[col] = metrics
         self.results = results
         return results
-
-
-
