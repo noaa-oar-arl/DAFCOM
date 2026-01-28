@@ -8,7 +8,7 @@ from typing import Optional, Union
 
 import numpy as np
 import xarray as xr
-import xesmf as xe
+from xregrid import Regridder
 
 
 def Regrid(
@@ -20,13 +20,13 @@ def Regrid(
     ll_lon: Optional[float] = None,
     resolution: Optional[float] = None,
     interpolation_method: str = "bilinear",
-    regridder: Optional[xe.Regridder] = None,
+    regridder: Optional[Regridder] = None,
 ) -> xr.Dataset:
     """
     Regrid a variable from a dataset to a regular lat/lon grid.
 
     🍃⚡ Aero Protocol: This function is backend-agnostic and preserves Dask laziness.
-    It supports reusing an existing xESMF Regridder for performance optimization.
+    It supports reusing an existing XRegrid Regridder for performance optimization.
 
     Parameters
     ----------
@@ -45,9 +45,9 @@ def Regrid(
     resolution : float, optional
         The desired resolution in degrees. Required if regridder is not provided.
     interpolation_method : str, default 'bilinear'
-        The interpolation method to use (passed to xESMF).
-    regridder : xesmf.Regridder, optional
-        An existing xESMF Regridder instance to reuse.
+        The interpolation method to use (passed to XRegrid).
+    regridder : xregrid.Regridder, optional
+        An existing XRegrid Regridder instance to reuse.
 
     Returns
     -------
@@ -73,14 +73,10 @@ def Regrid(
                 "lon": (["lon"], lon_coords),
             }
         )
-        regridder = xe.Regridder(ds, ds_out, interpolation_method)
-    else:
-        # Extract target coordinates from regridder
-        lat_coords = regridder.out_horiz_dims_coords["lat"]
-        lon_coords = regridder.out_horiz_dims_coords["lon"]
+        regridder = Regridder(ds, ds_out, method=interpolation_method)
 
     # Perform regridding
-    # xe.Regridder works with Dask-backed xarray objects.
+    # XRegrid Regridder works with Dask-backed xarray objects.
     dr_out = regridder(ds[variable_name])
 
     # Create final dataset with regridded data
