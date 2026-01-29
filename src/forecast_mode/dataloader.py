@@ -31,9 +31,10 @@ import numpy as np
 import os
 from netCDF4 import Dataset
 import fnmatch
+from datetime import timedelta
 
 class Load_AOD:
-    def extract_data(aod_folder,year_list, month_list, day_list, size_lat_ufs, size_lon_ufs):
+    def extract_data(aod_folder,year_list, month_list, day_list):
         "Step 1: Extract data and return as xarray Dataset"
         all_data = []
         times = []
@@ -51,8 +52,12 @@ class Load_AOD:
                           lon = f.variables['lon'][:] - 360
                           aod = f.variables['aod'][:][0]
                           
-                          time_str = f"{year}{month}{day}_{filelist[i].replace('aqm.t','').replace('.phy.f0','')}"
-                          times.append(time_str)
+                          time_str = f"{year}{month}{day}_{filelist[i].replace('aqm.t','').replace('.phy.f0','').replace('.nc','').replace('z','')}"
+                          time_str_head= time_str[:-2]
+                          time_str_tail= time_str[-2:]
+                          
+                          time_dt=pd.to_datetime(time_str_head,format='%Y%m%d_%H')+timedelta(hours=int(time_str_tail))
+                          times.append(time_dt)
                           all_data.append(aod)
         
         
@@ -71,7 +76,7 @@ class Load_AOD:
 
 
 class Load_Meteo:
-    def extract_data(meteo_folder,variable_name, year_list, month_list, day_list, size_lat_ufs, size_lon_ufs):
+    def extract_data(meteo_folder,variable_name, year_list, month_list, day_list):
         "Step 1: Extract data and return as xarray Dataset"
         all_data = []
         times = []
@@ -120,8 +125,13 @@ class Load_Meteo:
                                 precipitation_w = f.variables['tprcp'][:][0]  #unit = kg/m^2
                                 all_data.append(precipitation_w)
                             
-                            time_str = f"{year}{month}{day}_{filelist[i].replace('aqm.t','').replace('.phy.f0','')}"
-                            times.append(time_str)
+                            
+                            time_str = f"{year}{month}{day}_{filelist[i].replace('aqm.t','').replace('.phy.f0','').replace('.nc','').replace('z','')}"
+                            time_str_head= time_str[:-2]
+                            time_str_tail= time_str[-2:]
+                            
+                            time_dt=pd.to_datetime(time_str_head,format='%Y%m%d_%H')+timedelta(hours=int(time_str_tail))
+                            times.append(time_dt)
                             
         
         
@@ -139,7 +149,7 @@ class Load_Meteo:
         return ds
 
 class Load_Chem:
-    def extract_data(chem_folder,variable_name, year_list, month_list, day_list, size_lat_ufs, size_lon_ufs):
+    def extract_data(chem_folder,variable_name, year_list, month_list, day_list):
         "Step 1: Extract data and return as xarray Dataset"
         all_data = []
         times = []
@@ -166,9 +176,10 @@ class Load_Chem:
                             all_data.append(o3_w)
                             
 
+                        time_str = f"{year}{month}{day}"
                         
-                        time_str = f"{year}{month}{day}_{filename.replace('aqm.t','').replace('.chem_sfc','')}"
-                        times.append(time_str)
+                        time_dt=pd.to_datetime(time_str,format='%Y%m%d')+timedelta(hours=12+int(i))
+                        times.append(time_dt)
                             
         
         
@@ -187,35 +198,99 @@ class Load_Chem:
 
 
 class Load_Static_Data:
-    def extract_elevation(static_elevation_data,variable_name,time_length):       
+    def extract_elevation(static_elevation_data,variable_name,time_length,year_list, month_list, day_list):       
         filename= static_elevation_data
         f = Dataset(filename,'r')
+        
+        lat= f.variables['lat'][:]
+        lon= f.variables['lon'][:]       
+        lon2d,lat2d= np.meshgrid(lon,lat)
+        
         Data_output=[]
+        times= []
         for i in range(time_length):
             data_output_here = f.variables[variable_name][:][0]
             Data_output.append(data_output_here)
             
-        return Data_output
+            time_str = year_list[0]+month_list[0]+day_list[0]
+            time_dt=pd.to_datetime(time_str,format='%Y%m%d')+timedelta(hours=12+int(i))
+            times.append(time_dt)
+        
+        ds = xr.Dataset(
+            {
+                variable_name: (['time', 'lat', 'lon'], np.stack(Data_output)),
+                'lat': (['lat', 'lon'], lat2d),
+                'lon': (['lat', 'lon'], lon2d)
+            },
+            coords={
+                'time': times
+            }
+        ) 
+            
+        return ds
     
-    def extract_population(static_population_data,variable_name,time_length):       
+    def extract_population(static_population_data,variable_name,time_length,year_list, month_list, day_list):       
         filename= static_population_data
         f = Dataset(filename,'r')
+        
+        lat= f.variables['lat'][:]
+        lon= f.variables['lon'][:]       
+        lon2d,lat2d= np.meshgrid(lon,lat)
+        
         Data_output=[]
+        times=[]
+        
         for i in range(time_length):
             data_output_here = f.variables[variable_name][:][0]
             Data_output.append(data_output_here)
             
-        return Data_output
+            time_str = year_list[0]+month_list[0]+day_list[0]
+            time_dt=pd.to_datetime(time_str,format='%Y%m%d')+timedelta(hours=12+int(i))
+            times.append(time_dt)
+        
+        ds = xr.Dataset(
+            {
+                variable_name: (['time', 'lat', 'lon'], np.stack(Data_output)),
+                'lat': (['lat', 'lon'], lat2d),
+                'lon': (['lat', 'lon'], lon2d)
+            },
+            coords={
+                'time': times
+            }
+        )   
+        return ds
             
-    def extract_land_use_cover(static_land_use_cover_data,variable_name,time_length):       
+    def extract_land_use_cover(static_land_use_cover_data,variable_name,time_length,year_list, month_list, day_list):       
         filename= static_land_use_cover_data
         f = Dataset(filename,'r')
+        
+        lat= f.variables['lat'][:]
+        lon= f.variables['lon'][:]       
+        lon2d,lat2d= np.meshgrid(lon,lat)
+        
         Data_output=[]
+        times=[]
+        
         for i in range(time_length):
             data_output_here = f.variables[variable_name][:][0]
             Data_output.append(data_output_here)
             
-        return Data_output
+            time_str = year_list[0]+month_list[0]+day_list[0]
+            time_dt=pd.to_datetime(time_str,format='%Y%m%d')+timedelta(hours=12+int(i))
+            times.append(time_dt)
+
+        ds = xr.Dataset(
+            {
+                variable_name: (['time', 'lat', 'lon'], np.stack(Data_output)),
+                'lat': (['lat', 'lon'], lat2d),
+                'lon': (['lat', 'lon'], lon2d)
+            },
+            coords={
+                'time': times
+            }
+        )  
+            
+        return ds
             
     #     return Elevation
     # def extract_anthro_emission():

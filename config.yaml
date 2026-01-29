@@ -12,22 +12,22 @@ logging:
 # Database Sources and Connection Settings
 database:
   dynamic_inputs:  # Updated hourly or daily
-    meteorology: /Users/beiming_tang/Desktop/DATA/NAQFC-PROD/   #aqm.t12z.phy*.nc
-    aod: /Users/beiming_tang/Desktop/DATA/NAQFC-PROD/           #aqm.t12z.phy*.nc
+    meteorology: /Users/beiming_tang/Desktop/DAFCOM_data/NAQFC-PROD/   #aqm.t12z.phy*.nc
+    aod: /Users/beiming_tang/Desktop/DAFCOM_data/NAQFC-PROD/           #aqm.t12z.phy*.nc
     ndvi: ndvi_process_folder
-    surface_pollutants: /Users/beiming_tang/Desktop/DATA/NAQFC-PROD/     #aqm.t12z.chem_sfc.nc
+    surface_pollutants: /Users/beiming_tang/Desktop/DAFCOM_data/NAQFC-PROD/     #aqm.t12z.chem_sfc.nc
     tempo_info: calculated_by_ground_station
 
   static_inputs:
-    elevation: /Users/beiming_tang/Desktop/DATA/Static_Data/elevation_final_regrid_0p01.nc
-    population: /Users/beiming_tang/Desktop/DATA/Static_Data/Population_0p01_regrid_data.nc
-    land_use_cover: /Users/beiming_tang/Desktop/DATA/Static_Data/LUC_0p01_regrid_data.nc  
+    elevation: /Users/beiming_tang/Desktop/DAFCOM_data/Static_Data/elevation_final_regrid_0p01.nc
+    population: /Users/beiming_tang/Desktop/DAFCOM_data/Static_Data/Population_0p01_regrid_data.nc
+    land_use_cover: /Users/beiming_tang/Desktop/DAFCOM_data/Static_Data/LUC_0p01_regrid_data.nc  
     anthropogenic_emission: GMU_nemo_emissions
     spatial_info: calculated_by_ground_station
   
   observations:
-    airnow: /Users/beiming_tang/Desktop/DATA/OBS_Data/ #getobs_PM25_20250401_20250501.xlsx
-
+    airnow_folder: /Users/beiming_tang/Desktop/DAFCOM_data/OBS_Data/ #getobs_PM25_20250401_20250501.xlsx
+    airnow_file: 'AirNow_20230801_20230831'
 # Input Sources Format:
 format:
   observation: 
