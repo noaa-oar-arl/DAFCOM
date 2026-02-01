@@ -12,6 +12,8 @@ from src.forecast_mode.dataloader import Load_Observation
 import time
 import numpy as np
 from datetime import datetime
+import pandas as pd
+import xarray as xr
 
 '''
 1) load config yaml file
@@ -90,11 +92,11 @@ print(f"Step 4 done, elapsed: {time.time() - start:.2f}s")
 
 obs_airnow_folder=config['database']['observations']['airnow_folder']
 obs_airnow_filename = config['database']['observations']['airnow_filename']
-start_time= datetime(int(year_list[0]),int(month_list[0]),int(day_list[0]),12,0,0)
+# start_time= datetime(int(year_list[0]),int(month_list[0]),int(day_list[0]),12,0,0)
+start_time = datetime(2023,8,1,12,0,0)
                                   
-count_time,obs_index_list,obs_time_list,obs_pm25_list,obs_lat_list,obs_lon_list = Load_Observation.extract_airnow_pm25(obs_airnow_folder,
-                                                                                                            obs_airnow_filename,
-                                                                                                            start_time,
+obs_index_list,obs_time_list,obs_pm25_list,obs_lat_list,obs_lon_list = Load_Observation.extract_airnow_pm25(obs_airnow_folder,
+                                                                                                            obs_airnow_filename,start_time,
                                                                                                             ll_lat, ur_lat, ll_lon, ur_lon)
 
 
@@ -105,9 +107,37 @@ print(f"Step 5 done, elapsed: {time.time() - start:.2f}s")
 '''
 5) do interpolation
 '''
-#change lat and lon from variables to coordinates
+#5-1) change lat and lon from variables to coordinates
 ds = final_chem_pm25
 ds = ds.set_coords(['lat','lon'])
+
+
+#5-2) process obs data format
+obs_time = pd.to_datetime(obs_time_list)
+obs_lat  = np.asarray(obs_lat_list)
+obs_lon  = np.asarray(obs_lon_list)
+
+obs_ds = xr.Dataset(
+    coords={
+        "obs": np.arange(len(obs_time)),
+        "time": ("obs", obs_time),
+        "latitude": ("obs", obs_lat),
+        "longitude": ("obs", obs_lon),
+    }
+)
+
+#5-3) interpolation
+pm25_interp = ds["pm25"].interp(latitude=obs_ds["latitude"],longitude=obs_ds["longitude"],method='linear').isel(time=obs_ds['time'],method='nearest')
+
+model_pm25 = pm25_interp.values
+
+
+
+
+
+
+
+
 
 
 
