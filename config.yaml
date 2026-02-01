@@ -27,7 +27,7 @@ database:
   
   observations:
     airnow_folder: /Users/beiming_tang/Desktop/DAFCOM_data/OBS_Data/ #getobs_PM25_20250401_20250501.xlsx
-    airnow_file: 'AirNow_20230801_20230831'
+    airnow_filename: AirNow_20230801_20230831.nc
 # Input Sources Format:
 format:
   observation: 

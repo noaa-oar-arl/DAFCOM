@@ -11,6 +11,7 @@ from src.forecast_mode.dataloader import Load_Observation
 
 import time
 import numpy as np
+from datetime import datetime
 
 '''
 1) load config yaml file
@@ -86,18 +87,27 @@ print(f"Step 4 done, elapsed: {time.time() - start:.2f}s")
 '''
 4) load observation from AirNow
 '''
-# obs_airnow_folder=config['database']['observations']['airnow_folder']
-# obs_airnow_filename = config['database']['observations']['airnow_file']
-# obs_index_list,obs_time_list,obs_pm25_list,obs_lat_list,obs_lon_list = Load_Observation.extract_airnow_pm25(obs_airnow_folder,
-#                                                                                                             obs_airnow_filename,
-#                                                                                                             ll_lat, ur_lat, ll_lon, ur_lon)
+
+obs_airnow_folder=config['database']['observations']['airnow_folder']
+obs_airnow_filename = config['database']['observations']['airnow_filename']
+start_time= datetime(int(year_list[0]),int(month_list[0]),int(day_list[0]),12,0,0)
+                                  
+count_time,obs_index_list,obs_time_list,obs_pm25_list,obs_lat_list,obs_lon_list = Load_Observation.extract_airnow_pm25(obs_airnow_folder,
+                                                                                                            obs_airnow_filename,
+                                                                                                            start_time,
+                                                                                                            ll_lat, ur_lat, ll_lon, ur_lon)
 
 
-# print('finish part 5')
-# print(f"Step 5 done, elapsed: {time.time() - start:.2f}s")
+print('finish part 5')
+print(f"Step 5 done, elapsed: {time.time() - start:.2f}s")
 
 
-
+'''
+5) do interpolation
+'''
+#change lat and lon from variables to coordinates
+ds = final_chem_pm25
+ds = ds.set_coords(['lat','lon'])
 
 
 

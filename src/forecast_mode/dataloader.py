@@ -1,37 +1,16 @@
 import pandas as pd
 import xarray as xr
+
 import datetime
-from datetime import datetime as dt
-import pandas as pd
+from datetime import timedelta
 
-#======================
-#main code
-#
-#======================
 
-# class DataLoader:
-#     def __init__(self, config):
-#         self.config = config
-
-#     def load(self, file_path):
-#         if self.config["data_type"] == "netcdf":
-#             return self.read_netcdf(file_path)
-#         elif self.config["data_type"] == "csv":
-#             return self.read_csv(file_path)
-#         else:
-#             return ValueError(f"Unsupported data type")
-
-#     def read_netcdf(self, file_path: str) -> xr.Dataset:
-#         return xr.open_dataset(file_path)
-
-#     def read_csv(self, file_path: str) -> pd.DataFrame:
-#         return pd.read_csv(file_path)
 
 import numpy as np
 import os
 from netCDF4 import Dataset
 import fnmatch
-from datetime import timedelta
+
 
 class Load_AOD:
     def extract_data(aod_folder,year_list, month_list, day_list):
@@ -297,20 +276,21 @@ class Load_Static_Data:
         # return xxx
     
 class Load_Observation:
-    def extract_airnow_pm25(obs_folder,obs_filename,ll_lat,ur_lat,ll_lon,ur_lon): #1 month takes 11mins. need options to save results
+    def extract_airnow_pm25(obs_folder,obs_filename,start_time,ll_lat,ur_lat,ll_lon,ur_lon): 
+        
+        end_time = start_time+timedelta(hours=24)
+        
         '''
         1) load data from AirNow
         '''
         #obs_filename example: AirNow_20250801_20250831.nc this is downloaded using MELODIES-MONET
         filename = obs_folder+obs_filename
         f1 = xr.open_dataset(filename)
-        lat = f1['latitude']       # 2089
-        lon = f1['longitude']      # 2089
-        time_ori = f1['time']      # 2231
-        pm25 = f1['PM2.5'][:,0,:]  #(2231,2089)
-        #o3 = f1['OZONE'][:,0,:]  
+        lat = f1['latitude']       
+        lon = f1['longitude']      
+        time_ori = f1['time']      
+        pm25 = f1['PM2.5'][:,0,:]  
         
-        # print(np.shape(pm25))        
         '''
         2) find vacant site
         '''
@@ -323,9 +303,8 @@ class Load_Observation:
         '''
         3) average by hour
         '''
-        pm25_avr_hr = pm25.resample(time = 'h').mean()     #(745,2231)
-        time_avr_hr = time_ori.resample(time= 'h').mean()  #2231       
-        # print(np.shape(pm25_avr_hr))
+        pm25_avr_hr = pm25.resample(time = 'h').mean()     
+        time_avr_hr = time_ori.resample(time= 'h').mean()    
         
         '''
         4) get useful data
@@ -335,21 +314,22 @@ class Load_Observation:
         lat_new_list = []
         lon_new_list = []
         index_new_list = []
-        for i in range(len(lat)): #number of sites ==2231
+        for i in range(len(lat)): 
             if i not in site_vacant_list:
                 if float(lat[i]) >= ll_lat and float(lat[i]) <= ur_lat:
                     if float(lon[i]) >= ll_lon and float(lon[i]) <= ur_lon:
-                        for j in range(len(time_avr_hr)):  #time == 745
-                            if float(pm25_avr_hr[j][i]) != -1:
-                                pm25_new_list.append(np.round(float(pm25_avr_hr[j][i]),4))      
+                        
+                        for j in range(len(time_avr_hr)):  
+                            time_here = pd.to_datetime(time_avr_hr[j].values)
+                            if time_here >= start_time and time_here <= end_time: 
                                 
-                                time_here = time_avr_hr[j].values
-                                time_formal = pd.to_datetime(time_here)
-                                time_new_list.append(str(time_formal))
-                              
-                                lat_new_list.append(float(lat[i]))
-                                lon_new_list.append(float(lon[i]))
-                                index_new_list.append(i)
+                                if float(pm25_avr_hr[j][i]) != -1:                                    
+                                    pm25_new_list.append(np.round(float(pm25_avr_hr[j][i]),4))                                                         
+                                    time_new_list.append(str(time_here))
+                                  
+                                    lat_new_list.append(float(lat[i]))
+                                    lon_new_list.append(float(lon[i]))
+                                    index_new_list.append(i)
 
         return index_new_list,time_new_list,pm25_new_list,lat_new_list,lon_new_list
 
