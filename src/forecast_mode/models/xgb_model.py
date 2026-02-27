@@ -4,11 +4,12 @@ Aero-compliant XGBoost Pipeline Module.
 """
 
 import os
-from typing import Any, Dict, List, Optional, Tuple
+from datetime import timedelta
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-import joblib
 import numpy as np
 import pandas as pd
+import xarray as xr
 import xgboost as xgb
 from sklearn.model_selection import RandomizedSearchCV
 
@@ -35,10 +36,13 @@ class XGBPipeline:
     def __init__(
         self,
         data_path: Optional[str] = None,
-        df: Optional[pd.DataFrame] = None,
+        df: Optional[Union[pd.DataFrame, xr.Dataset, xr.DataArray]] = None,
+        time_step: int = 168,
+        time_step_short: int = 96,
         features: Optional[List[str]] = None,
         target: str = DEFAULT_TARGET,
         param_grid: Optional[Dict[str, List[Any]]] = None,
+        model_path: str = "xgb_model.json",
         random_state: Optional[int] = 42,
     ):
         """
@@ -48,69 +52,185 @@ class XGBPipeline:
         ----------
         data_path : str, optional
             Path to the CSV data file.
-        df : pd.DataFrame, optional
-            DataFrame containing training data.
+        df : pd.DataFrame or xr.Dataset or xr.DataArray, optional
+            Data containing training samples.
+        time_step : int, default 168
+            Total time steps (Input + Forecast). 168 = 96h input + 72h forecast.
+        time_step_short : int, default 96
+            Input sequence length (4 days = 96h).
         features : List[str], optional
             List of feature names.
         target : str, default 'pm25'
             Target variable name.
         param_grid : Dict[str, List[Any]], optional
             Hyperparameter grid for search.
+        model_path : str, default 'xgb_model.json'
+            Path to save/load the model.
         random_state : int, default 42
             Random seed for reproducibility.
         """
         self.data_path = data_path
         self.df = df
+        self.time_step = time_step
+        self.time_step_short = time_step_short
         self.features = features or DEFAULT_FEATURES
         self.target = target
         self.param_grid = param_grid or DEFAULT_PARAM_GRID
+        self.model_path = model_path
         self.random_state = random_state
 
-        self.input_X: Optional[np.ndarray] = None
-        self.output_y: Optional[np.ndarray] = None
+        self.X: Optional[np.ndarray] = None
+        self.Y: Optional[np.ndarray] = None
+        self.model: Optional[xgb.Booster] = None
         self.searcher: Optional[RandomizedSearchCV] = None
-        self.best_estimator_: Optional[xgb.XGBRegressor] = None
 
-    def load_data(self) -> pd.DataFrame:
+    def _to_dataframe(self, data: Union[pd.DataFrame, xr.Dataset, xr.DataArray]) -> pd.DataFrame:
         """
-        Load CSV from path or use provided DataFrame.
+        Convert xarray objects to pandas DataFrame if necessary.
+
+        Parameters
+        ----------
+        data : pd.DataFrame or xr.Dataset or xr.DataArray
+            Input data.
 
         Returns
         -------
         pd.DataFrame
-            The loaded training data.
+            Converted DataFrame.
         """
-        if self.df is not None:
-            return self.df.copy()
-        if not self.data_path:
-            raise ValueError("Either data_path or df must be provided.")
-        if not os.path.isfile(self.data_path):
-            raise FileNotFoundError(f"Data file not found: {self.data_path}")
-        return pd.read_csv(self.data_path)
+        if isinstance(data, (xr.Dataset, xr.DataArray)):
+            # 🍃⚡ Aero Protocol: Convert to dataframe only for ML backend.
+            return data.to_dataframe().reset_index()
+        return data.copy()
 
-    def prepare_inputs(self, df: Optional[pd.DataFrame] = None) -> Tuple[np.ndarray, np.ndarray]:
+    def prepare_sequences(
+        self, df: Optional[Union[pd.DataFrame, xr.Dataset, xr.DataArray]] = None
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Prepare input matrix X and target vector y.
+        Prepare sequences for XGBoost training by flattening time dimension.
 
         Parameters
         ----------
-        df : pd.DataFrame, optional
+        df : pd.DataFrame or xr.Dataset or xr.DataArray, optional
             The data to prepare. If None, uses loaded data.
 
         Returns
         -------
         Tuple[np.ndarray, np.ndarray]
-            Features matrix (X) and target vector (y).
+            Features matrix (X) and target vector (Y).
         """
-        df = df if df is not None else self.load_data()
-        missing = [c for c in self.features + [self.target] if c not in df.columns]
-        if missing:
-            raise KeyError(f"Missing required columns in data: {missing}")
-        X = df[self.features].values.astype(float)
-        y = df[self.target].values.astype(float)
-        self.input_X = X
-        self.output_y = y
-        return X, y
+        if df is None:
+            df = self.df if self.df is not None else self.data_path
+
+        if isinstance(df, str):
+            df = pd.read_csv(df)
+        elif isinstance(df, (xr.Dataset, xr.DataArray)):
+            # 🍃⚡ Aero Protocol: Convert to dataframe only when needed for non-Xarray backend.
+            df = df.to_dataframe().reset_index()
+        elif isinstance(df, pd.DataFrame):
+            df = df.copy()
+        else:
+            raise ValueError("No data provided or unsupported format")
+
+        df["time_utc"] = pd.to_datetime(df["time_utc"], format="%Y-%m-%d %H:%M:%S")
+
+        site_list = list(df["site_index"])
+        time_list = list(df["time_utc"])
+
+        sequence_line_start_list = []
+        for i in range(len(site_list)):
+            if i + self.time_step <= len(site_list):
+                if site_list[i + self.time_step - 1] == site_list[i]:
+                    time_start = time_list[i]
+                    time_end = time_list[i + self.time_step - 1]
+                    if time_start + timedelta(hours=self.time_step - 1) == time_end:
+                        sequence_line_start_list.append(i)
+
+        data_x_raw = df[self.features].values
+        data_y_raw = df[self.target].values
+
+        X = []
+        Y = []
+        for start in sequence_line_start_list:
+            # Flatten X: (time_step_short, n_features) -> (time_step_short * n_features)
+            X.append(data_x_raw[start : start + self.time_step_short, :].flatten())
+            # Y: (forecast_length,)
+            Y.append(data_y_raw[start + self.time_step_short : start + self.time_step])
+
+        self.X = np.array(X)
+        self.Y = np.array(Y)
+
+        return self.X, self.Y
+
+    def load_existing_model(self) -> Optional[xgb.Booster]:
+        """
+        Load an existing model from self.model_path if it exists.
+
+        Returns
+        -------
+        xgb.Booster or None
+            The loaded model, or None if not found.
+        """
+        if os.path.exists(self.model_path):
+            self.model = xgb.Booster()
+            self.model.load_model(self.model_path)
+            return self.model
+        return None
+
+    def train_model(self, params: Optional[Dict] = None, num_boost_round: int = 10) -> xgb.Booster:
+        """
+        Train the XGBoost model. Supports continual learning.
+
+        Parameters
+        ----------
+        params : Dict, optional
+            Training parameters.
+        num_boost_round : int, default 10
+            Number of boosting rounds.
+
+        Returns
+        -------
+        xgb.Booster
+            The trained model.
+        """
+        if self.X is None or self.Y is None:
+            raise RuntimeError("Call prepare_sequences first")
+
+        dtrain = xgb.DMatrix(self.X, label=self.Y)
+        existing_model = self.load_existing_model()
+
+        default_params = {
+            "objective": "reg:squarederror",
+            "seed": self.random_state,
+            "learning_rate": 0.1,
+            "max_depth": 6,
+        }
+        if params:
+            default_params.update(params)
+
+        self.model = xgb.train(default_params, dtrain, num_boost_round=num_boost_round, xgb_model=existing_model)
+        self.model.save_model(self.model_path)
+        return self.model
+
+    def train_iterative(self, df: Union[pd.DataFrame, xr.Dataset, xr.DataArray], num_boost_round: int = 5) -> xgb.Booster:
+        """
+        Perform one iteration of training on a new batch of data.
+
+        Parameters
+        ----------
+        df : pd.DataFrame or xr.Dataset or xr.DataArray
+            The new batch of data.
+        num_boost_round : int, default 5
+            Number of boosting rounds for this iteration.
+
+        Returns
+        -------
+        xgb.Booster
+            The trained model.
+        """
+        X, Y = self.prepare_sequences(df)
+        self.X, self.Y = X, Y
+        return self.train_model(num_boost_round=num_boost_round)
 
     def tune_random_search(
         self,
@@ -141,8 +261,8 @@ class XGBPipeline:
         RandomizedSearchCV
             The fitted search object.
         """
-        if self.input_X is None or self.output_y is None:
-            raise RuntimeError("Call prepare_inputs() first.")
+        if self.X is None or self.Y is None:
+            raise RuntimeError("Call prepare_sequences() first.")
         xgb_base = xgb.XGBRegressor(objective="reg:squarederror", random_state=self.random_state)
         search = RandomizedSearchCV(
             estimator=xgb_base,
@@ -154,7 +274,7 @@ class XGBPipeline:
             verbose=verbose,
             random_state=self.random_state,
         )
-        search.fit(self.input_X, self.output_y)
+        search.fit(self.X, self.Y)
         self.searcher = search
         return search
 
@@ -171,13 +291,12 @@ class XGBPipeline:
             raise RuntimeError("Call tune_random_search() first.")
         best_params = self.searcher.best_params_
         best = xgb.XGBRegressor(objective="reg:squarederror", random_state=self.random_state, **best_params)
-        best.fit(self.input_X, self.output_y)
-        self.best_estimator_ = best
+        best.fit(self.X, self.Y)
         return best
 
     def save_model(self, out_path: str = "./xgb_model.joblib") -> str:
         """
-        Save the trained model to disk.
+        Save the trained Booster to disk.
 
         Parameters
         ----------
@@ -189,9 +308,9 @@ class XGBPipeline:
         str
             The path to the saved model.
         """
-        if self.best_estimator_ is None:
-            raise RuntimeError("No fitted model to save. Call fit_best_model() first.")
-        joblib.dump(self.best_estimator_, out_path)
+        if self.model is None:
+            raise RuntimeError("No trained model to save. Call train_model() or train_iterative() first.")
+        self.model.save_model(out_path)
         return out_path
 
     def run(
@@ -201,7 +320,7 @@ class XGBPipeline:
         scoring: str = "r2",
         n_jobs: int = -1,
         verbose: int = 1,
-        model_out: str = "./xgb_model.joblib",
+        model_out: str = "./xgb_model.json",
     ) -> Dict[str, Any]:
         """
         Orchestrator: prepare data, tune, fit best, save model.
@@ -218,7 +337,7 @@ class XGBPipeline:
             Parallel jobs.
         verbose : int, default 1
             Verbosity.
-        model_out : str, default './xgb_model.joblib'
+        model_out : str, default './xgb_model.json'
             Output path for model.
 
         Returns
@@ -226,11 +345,12 @@ class XGBPipeline:
         Dict[str, Any]
             Results dictionary (best_params, best_score, model_path).
         """
-        self.prepare_inputs()
+        self.prepare_sequences()
         search = self.tune_random_search(n_iter=n_iter, cv=cv, scoring=scoring, n_jobs=n_jobs, verbose=verbose)
         best_score = search.best_score_
         best_params = search.best_params_
-        self.fit_best_model()
+        best_estimator = self.fit_best_model()
+        self.model = best_estimator.get_booster()
         model_path = self.save_model(model_out)
         return {
             "best_params": best_params,
