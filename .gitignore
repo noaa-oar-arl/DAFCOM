@@ -1,0 +1,38 @@
+# Scientific data
+*.nc
+*.nc4
+*.hdf
+*.hdf5
+
+# ML/model output
+*.h5
+*.keras
+*.pkl
+*.joblib
+
+# Large generated tables
+*_HourlyData_*.csv
+Y_predict_original.csv
+Y_test_original.csv
+
+# Observation downloads
+getobs_*.xlsx
+
+# SLURM output
+slurm-*.out
+*.out
+*.err
+
+# Diagnostics
+memory.txt
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Backup / temp
+*_backup.py
+*~
+.DS_Store
