@@ -1,0 +1,6 @@
+for dir in 2026_03*/; do
+    old="${dir%/}"
+    new="2026_05${old#2026_03}"
+    echo "$old -> $new"
+done
+
