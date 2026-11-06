@@ -1,29 +1,102 @@
 # NOAA's DynAmic Forecasting of Air Composition using Optimized Machine Learning
 
-description
+DAFCOM combines UFS air-quality predictors, observations, LSTM forecasts, and
+XGBoost refinement. The configurable Python package is the supported execution
+path on this branch. The legacy forecast and reanalysis script trees have been
+removed; their scientific reference implementations remain available in
+[Git history](https://github.com/drnimbusrain/DAFCOM/tree/bddff9f9593759bdbe5047e428aa49627d3ce8c0/src).
+The package does not depend on those scripts or implement the legacy reanalysis
+research workflows.
 
+For detailed configuration, training/evaluation, forecast-only execution, and
+Ursa submission/recovery instructions, see the
+[DAFCOM user guide](documents/user-guide.md).
 
-### Major Goals 
+## Install and configure
 
-* Goal 1: build 1st version workflow  
-  - [ ] step 1  : process all inputs to be daily, 1 by 1km for June, July, Aug, 2023
-  - [ ] step 2  : build initial forcast & downscaling Machine learning model with 4 cases: 1) train 2023-06, predict 2023-07; 2) train 2023-07, predict 2023-08; 3) train 2023-06, predict 2023-08; 4) train 2023-06&07, predict 2023-08
-* Goal 2: build 2nd version workflow
-  - [ ] step 1 : process all inputs for training with nearest 30 days, and predict only 1 day. repeat for predicting 2023-07-01 to 2023-08-31.
-  - [ ] step 2 : analyze ML model performance, and compared to Goal 1.
-  - [ ] step 3 : now we use 30 days to train, update to determine the optimal time-scale/length of training.
-### How to Run
+Use Python 3.12 for the tested TensorFlow environment. The core package supports
+Python 3.10+; availability of optional ML/ESMF dependencies depends on Python and
+platform.
 
-currently, all code are located and stored in HOPPER HPC.
-Located in: /groups/ESS/btang6/Projects/NOAA/Forecast_UFS/method1_entire_month_train/code/
-intermediate data are located in: /groups/ESS/btang6/Projects/NOAA/Forecast_UFS/method1_entire_month_train/data/
-all code are python, we have saved slurm file for runnig each python steps.
-to run slurm and python, an enviroment 'DAFCOM' has been built on HOPPER HPC, and all requird libary has been installed in 'DAFCOM' enviroment. slurm will call 'DAFCOM' to run
+```bash
+python -m pip install -e '.[ml,test]'
+```
 
+Curvilinear UFS grids additionally require ESMF/esmpy and xESMF in the same
+environment. Provision ESMF/esmpy with the site's environment/module or conda
+tools, then install `'.[regrid]'`. Pip alone does not provision ESMF/esmpy.
 
-### Time line of Funding
+Edit [`configs/ursa.yaml`](configs/ursa.yaml), including source file templates,
+coordinate/vertical dimension names, dates, features, domains, grid resolution,
+and scheduler resources. These paths are examples of the existing Ursa archive,
+not portable defaults or a claim that those files are available.
 
-Timeline or finish date at the miminum
+```bash
+dafcom validate configs/ursa.yaml
+dafcom plan configs/ursa.yaml
+```
+
+All dates are UTC and intervals are **start-inclusive, end-exclusive**.
+Resolution is in degrees; `0.01` degrees is not uniformly 1 km.
+
+## Local execution or Ursa submission
+
+```bash
+# Input/observation/station-feature preparation only, with prerequisite stages:
+dafcom run configs/ursa.yaml --stages features --workers 4
+
+# Prepare the entire training/prediction/evaluation workflow, without submission:
+dafcom prepare configs/ursa.yaml --run-dir /shared/scratch/dafcom/run-001
+
+# Inspect the generated config, manifest, and .slurm files before submitting:
+dafcom submit --run-dir /shared/scratch/dafcom/run-001
+```
+
+Run directories must be new and on a filesystem visible to all workers. They
+contain configuration/task snapshots, job-array scripts, per-task logs, a
+submission ledger, and isolated `products/`. Account `arl`, partition
+`u1-compute`, and QoS `batch` are configurable example defaults; confirm them
+with Ursa administrators. Setup commands and the Python executable are explicit.
+
+Arrays have bounded size/concurrency and `afterok` dependencies. Array chunks
+within a stage are chained, so the concurrency cap is **per stage**, not multiplied
+by the number of chunks. Independent stages may run concurrently.
+
+## Forecast without observations or retraining
+
+In a new configuration:
+
+1. Set `model_source` to a previous run's `products/models/` directory.
+2. Keep the trained model settings and training periods; set `run` to the required
+   input history plus forecast period and update `models.prediction`.
+3. Set `models.site_predictions: false` and `models.grid_predictions: true`.
+4. Prepare/submit as above, or use `dafcom run`.
+
+The resulting graph excludes observations, station sampling, training, and
+evaluation. It loads compatible trained artifacts, predicts tiles in bounded
+cell batches, and assembles one NetCDF per domain/day without loading a complete
+domain into RAM.
+
+## Scientific compatibility and validation
+
+This migration requires **retraining**. Source valid times, chronological
+holdouts, training-only scalers, disjoint LSTM/XGBoost fitting periods, contiguous
+sequences, and properly scaled grid inference intentionally correct legacy
+behavior. An explicit `legacy_index` timing option supports historical timing
+comparisons; it does not restore all legacy ML behavior.
+
+See the [branch comparison, stage mapping, configuration contract, and
+operational acceptance checklist](documents/modernization.md).
+
+```bash
+python -m pytest -q
+python -m ruff check src/dafcom tests
+python -m ruff format --check src/dafcom tests
+```
+
+Tests use synthetic data, including actual TensorFlow/XGBoost training when the
+ML extra is installed. Real Ursa execution, production UFS/ESMF data, scientific
+skill/equivalence, and operational resource sizing require site validation.
 
 
 ### Disclaimer

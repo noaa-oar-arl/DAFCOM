@@ -1,0 +1,26 @@
+name: Package tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  forecast:
+    runs-on: ubuntu-latest
+    env:
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+      TF_NUM_INTRAOP_THREADS: "1"
+      TF_NUM_INTEROP_THREADS: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install -e '.[test,ml]'
+      - run: python -m ruff check src/dafcom tests
+      - run: python -m ruff format --check src/dafcom tests
+      - run: python -m pytest -q
+      - run: dafcom validate configs/ursa.yaml
+      - run: python -m pip wheel --no-deps . --wheel-dir dist
